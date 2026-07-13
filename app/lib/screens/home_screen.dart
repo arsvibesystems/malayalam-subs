@@ -402,7 +402,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 260, // Fixed height for standard thumbnail size
+            height: 210, // Fixed height for 2:3 poster aspect ratio
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),

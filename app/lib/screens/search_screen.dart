@@ -212,7 +212,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
                             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: (MediaQuery.of(context).size.width / 160).floor().clamp(2, 6),
-                              childAspectRatio: 0.58,
+                              childAspectRatio: 0.66,
                               crossAxisSpacing: 12,
                               mainAxisSpacing: 12,
                             ),
@@ -246,6 +246,7 @@ class _SearchScreenState extends State<SearchScreen> {
           },
         ),
       ),
+    ),
     ),
     );
   }
@@ -348,6 +349,27 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Text(
               '${provider.minRating.toStringAsFixed(1)} — ${provider.maxRating.toStringAsFixed(1)}',
               style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() => _showFilters = false);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Show Results',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 0.5),
+              ),
             ),
           ),
         ],
