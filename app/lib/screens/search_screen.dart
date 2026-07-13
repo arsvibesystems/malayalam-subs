@@ -32,9 +32,16 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Consumer<SubtitleProvider>(
+    return WillPopScope(
+      onWillPop: () async {
+        context.read<SubtitleProvider>().clearFilters();
+        return true;
+      },
+      child: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+          body: SafeArea(
+            child: Consumer<SubtitleProvider>(
           builder: (context, provider, _) {
             return Column(
               children: [
@@ -201,6 +208,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         )
                       : AnimationLimiter(
                           child: GridView.builder(
+                            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
                             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: (MediaQuery.of(context).size.width / 160).floor().clamp(2, 6),
@@ -238,6 +246,7 @@ class _SearchScreenState extends State<SearchScreen> {
           },
         ),
       ),
+    ),
     );
   }
 

@@ -210,10 +210,10 @@ class MSoneScraper(BaseScraper):
             for link in soup.find_all("a", href=True):
                 href = link["href"]
                 link_text = self._clean_text(link.get_text()).lower()
-                if any(ext in href.lower() for ext in ['.srt', '.zip', '.rar', 'download']):
+                if any(ext in href.lower() for ext in ['.srt', '.zip', '.rar', 'download']) and 'sub-counts' not in href:
                     download_url = href
                     break
-                if "ഡൗൺലോഡ്" in link.get_text() or "download" in link_text:
+                if ("ഡൗൺലോഡ്" in link.get_text() or "download" in link_text) and 'sub-counts' not in href:
                     download_url = href
                     break
             # Fallback: the source page itself is the download reference
