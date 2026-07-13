@@ -1,0 +1,52 @@
+{
+  "total_count": 12,
+  "last_updated": "2026-07-13T08:58:19.408217+00:00",
+  "per_source": {
+    "msone": 12
+  },
+  "filters": {
+    "languages": [
+      "English",
+      "French",
+      "Hindi",
+      "Japanese",
+      "Korean",
+      "Thai",
+      "ഗ്രീക്ക്",
+      "മലയാളം സിനിമകൾ"
+    ],
+    "genres": [
+      "Action",
+      "Comedy",
+      "Crime",
+      "Drama",
+      "Horror",
+      "Mystery",
+      "Romance",
+      "Thriller",
+      "Western",
+      "അഡ്വെഞ്ചർ",
+      "അനിമേഷൻ",
+      "ബയോപിക്ക്"
+    ],
+    "translators": [
+      "അരവിന്ദ് കുമാർ",
+      "അഷ്‌കർ ഹൈദർ",
+      "ആസിഫ് ആസി",
+      "എൽവിൻ ജോൺ പോൾ",
+      "പ്രശോഭ് പി.സി",
+      "മുബാറക്ക് റ്റി എൻ",
+      "വിഷ് ആസാദ്",
+      "വിഷ്‌ണു പ്രസാദ്",
+      "ഷിഹാസ് പരുത്തിവിള",
+      "സോണി ഫിലിപ്പ്"
+    ],
+    "sources": [
+      "msone"
+    ],
+    "release_types": [
+      "movie",
+      "series"
+    ]
+  }
+}

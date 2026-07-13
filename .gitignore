@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+.env
+
+# Flutter/Dart
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/.packages
+app/build/
+app/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.iws
+
+# Data files (optional: uncomment if you don't want to track initial data)
+# data/*.json
