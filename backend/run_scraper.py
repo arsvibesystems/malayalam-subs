@@ -13,7 +13,7 @@ import os
 import sys
 import argparse
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any
 
 # Add parent dir to path
@@ -40,10 +40,19 @@ def merge_results(existing: List[Dict], new_items: List[Dict]) -> List[Dict]:
     """
     existing_map = {item["slug"]: item for item in existing}
 
-    for item in new_items:
+    # We want new items to retain the order they were scraped in (newest first).
+    # Since datetime.now() inside a loop gives increasing timestamps,
+    # sorting by updated_at descending would reverse the order!
+    # Instead, we assign a decreasing timestamp artificially for the scrape batch.
+    base_time = datetime.now(timezone.utc)
+    
+    for i, item in enumerate(new_items):
         slug = item.get("slug", "")
         if not slug:
             continue
+
+        # Subtract milliseconds so earlier items get NEWER timestamps
+        item_time = (base_time - timedelta(milliseconds=i*10)).isoformat()
 
         if slug in existing_map:
             # Update existing item but keep the original created_at
@@ -51,12 +60,11 @@ def merge_results(existing: List[Dict], new_items: List[Dict]) -> List[Dict]:
             existing_map[slug].update(item)
             if old_created:
                 existing_map[slug]["created_at"] = old_created
-            existing_map[slug]["updated_at"] = datetime.now(timezone.utc).isoformat()
+            existing_map[slug]["updated_at"] = item_time
         else:
             # New item
-            now = datetime.now(timezone.utc).isoformat()
-            item["created_at"] = now
-            item["updated_at"] = now
+            item["created_at"] = item_time
+            item["updated_at"] = item_time
             existing_map[slug] = item
 
     # Sort by updated_at descending (newest first)

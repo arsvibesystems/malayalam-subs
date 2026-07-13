@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+
 import '../providers/subtitle_provider.dart';
 import '../models/subtitle.dart';
 import '../theme/app_theme.dart';
 import '../widgets/subtitle_card.dart';
 import 'detail_screen.dart';
 import 'search_screen.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -23,76 +24,80 @@ class HomeScreen extends StatelessWidget {
               color: AppTheme.accent,
               backgroundColor: AppTheme.bgCard,
               child: CustomScrollView(
-              slivers: [
-                // Custom App Bar
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                    child: Row(
-                        // Drawer Menu Button
-                        Builder(
-                          builder: (context) => _buildIconButton(
-                            icon: Icons.menu_rounded,
-                            onTap: () => Scaffold.of(context).openDrawer(),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // App title
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Malayalam Subs',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
+                slivers: [
+                  // Custom App Bar
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                      child: Row(
+                        children: [
+                          // Drawer Menu Button
+                          Builder(
+                            builder:
+                                (context) => _buildIconButton(
+                                  icon: Icons.menu_rounded,
+                                  onTap:
+                                      () => Scaffold.of(context).openDrawer(),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                provider.isLoading
-                                    ? 'Loading subtitles...'
-                                    : '${provider.allSubtitles.length} subtitles available',
-                                style: const TextStyle(
-                                  color: AppTheme.textMuted,
-                                  fontSize: 13,
+                          ),
+                          const SizedBox(width: 12),
+                          // App title
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Malayalam Subs',
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  provider.isLoading
+                                      ? 'Loading subtitles...'
+                                      : '${provider.allSubtitles.length} subtitles available',
+                                  style: const TextStyle(
+                                    color: AppTheme.textMuted,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        // Search button
-                        _buildIconButton(
-                          icon: Icons.search_rounded,
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const SearchScreen()),
+                          // Search button
+                          _buildIconButton(
+                            icon: Icons.search_rounded,
+                            onTap:
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const SearchScreen(),
+                                  ),
+                                ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
+                  // Content
+                  if (provider.isLoading)
+                    SliverToBoxAdapter(child: _buildLoadingState())
+                  else if (provider.error != null &&
+                      provider.allSubtitles.isEmpty)
+                    SliverToBoxAdapter(child: _buildErrorState(provider))
+                  else if (provider.allSubtitles.isEmpty)
+                    SliverToBoxAdapter(child: _buildEmptyState())
+                  else
+                    ..._buildNetflixLayout(context, provider),
 
-                // Content
-                if (provider.isLoading)
-                  SliverToBoxAdapter(child: _buildLoadingState())
-                else if (provider.error != null && provider.allSubtitles.isEmpty)
-                  SliverToBoxAdapter(child: _buildErrorState(provider))
-                else if (provider.allSubtitles.isEmpty)
-                  SliverToBoxAdapter(child: _buildEmptyState())
-                else
-                  ..._buildNetflixLayout(context, provider),
-
-                // Bottom padding
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 20),
-                ),
-              ],
-            ),
+                  // Bottom padding
+                  const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                ],
+              ),
             );
           },
         ),
@@ -100,7 +105,10 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildIconButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildIconButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -135,7 +143,11 @@ class HomeScreen extends StatelessWidget {
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.query_stats_rounded, color: AppTheme.accent, size: 40),
+                  Icon(
+                    Icons.query_stats_rounded,
+                    color: AppTheme.accent,
+                    size: 40,
+                  ),
                   SizedBox(height: 16),
                   Text(
                     'Stats',
@@ -211,10 +223,7 @@ class HomeScreen extends StatelessWidget {
               ),
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppTheme.textMuted,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
               ),
             ],
           ),
@@ -223,15 +232,24 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-
-
-  List<Widget> _buildNetflixLayout(BuildContext context, SubtitleProvider provider) {
+  List<Widget> _buildNetflixLayout(
+    BuildContext context,
+    SubtitleProvider provider,
+  ) {
     // Top 15 Latest
     final latest = provider.allSubtitles.take(15).toList();
     // Top 15 Movies
-    final movies = provider.allSubtitles.where((s) => s.releaseType != 'series').take(15).toList();
+    final movies =
+        provider.allSubtitles
+            .where((s) => s.releaseType != 'series')
+            .take(15)
+            .toList();
     // Top 15 Series
-    final series = provider.allSubtitles.where((s) => s.releaseType == 'series').take(15).toList();
+    final series =
+        provider.allSubtitles
+            .where((s) => s.releaseType == 'series')
+            .take(15)
+            .toList();
 
     return [
       _buildCategoriesRow(context, provider),
@@ -245,7 +263,15 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildCategoriesRow(BuildContext context, SubtitleProvider provider) {
-    final categories = ['Thriller', 'Horror', 'Action', 'Romance', 'Comedy', 'Drama', 'Sci-Fi'];
+    final categories = [
+      'Thriller',
+      'Horror',
+      'Action',
+      'Romance',
+      'Comedy',
+      'Drama',
+      'Sci-Fi',
+    ];
     return SliverToBoxAdapter(
       child: SizedBox(
         height: 40,
@@ -267,7 +293,10 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 0,
+                  ),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: AppTheme.bgCard,
@@ -291,7 +320,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHorizontalList(BuildContext context, String title, List<Subtitle> items) {
+  Widget _buildHorizontalList(
+    BuildContext context,
+    String title,
+    List<Subtitle> items,
+  ) {
     return SliverToBoxAdapter(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,12 +354,13 @@ class HomeScreen extends StatelessWidget {
                     width: 140, // Standard poster width
                     child: SubtitleCard(
                       subtitle: subtitle,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DetailScreen(subtitle: subtitle),
-                        ),
-                      ),
+                      onTap:
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DetailScreen(subtitle: subtitle),
+                            ),
+                          ),
                     ),
                   ),
                 );
@@ -374,20 +408,21 @@ class HomeScreen extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: 4,
-            itemBuilder: (_, __) => Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Shimmer.fromColors(
-                baseColor: AppTheme.bgCard,
-                highlightColor: AppTheme.bgCardLight,
-                child: Container(
-                  width: 140,
-                  decoration: BoxDecoration(
-                    color: AppTheme.bgCard,
-                    borderRadius: BorderRadius.circular(16),
+            itemBuilder:
+                (_, __) => Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Shimmer.fromColors(
+                    baseColor: AppTheme.bgCard,
+                    highlightColor: AppTheme.bgCardLight,
+                    child: Container(
+                      width: 140,
+                      decoration: BoxDecoration(
+                        color: AppTheme.bgCard,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
           ),
         ),
       ],
@@ -425,7 +460,10 @@ class HomeScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.accent,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
