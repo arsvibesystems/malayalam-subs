@@ -213,7 +213,7 @@ class TeamGoatScraper(BaseScraper):
                     if len(text) > 50 and "ടീം" not in text[:10]:
                         desc_parts.append(text)
                 if desc_parts:
-                    description = " ".join(desc_parts[:3])  # First 3 substantial paragraphs
+                    description = "\n\n".join(desc_parts)  # Keep all paragraphs
             data["description"] = description
 
             # --- Slug ---

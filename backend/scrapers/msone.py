@@ -219,16 +219,25 @@ class MSoneScraper(BaseScraper):
             # Fallback: the source page itself is the download reference
             data["download_url"] = download_url if download_url else url
 
-            # --- Description ---
-            # Get the meta description or OG description
-            meta_desc = soup.find("meta", attrs={"name": "description"})
-            og_desc = soup.find("meta", property="og:description")
-            if og_desc and og_desc.get("content"):
-                data["description"] = og_desc["content"]
-            elif meta_desc and meta_desc.get("content"):
-                data["description"] = meta_desc["content"]
-            else:
-                data["description"] = ""
+            # Get all paragraphs from the main content
+            desc_parts = []
+            main_content = soup.find("div", class_=re.compile(r'entry-content|post-content')) or soup.find("main")
+            if main_content:
+                for p in main_content.find_all("p"):
+                    text = self._clean_text(p.get_text())
+                    if len(text) > 30 and not any(kw in text.lower() for kw in ["പരിഭാഷ", "download", "ഡൗൺലോഡ്"]):
+                        desc_parts.append(text)
+            
+            # If no paragraphs found, fallback to meta description
+            if not desc_parts:
+                meta_desc = soup.find("meta", attrs={"name": "description"})
+                og_desc = soup.find("meta", property="og:description")
+                if og_desc and og_desc.get("content"):
+                    desc_parts.append(og_desc["content"])
+                elif meta_desc and meta_desc.get("content"):
+                    desc_parts.append(meta_desc["content"])
+
+            data["description"] = "\n\n".join(desc_parts)
 
             # --- Slug ---
             data["slug"] = self._make_slug(data["title"], url)
