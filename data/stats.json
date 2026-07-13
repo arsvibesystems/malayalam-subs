@@ -1,10 +1,10 @@
 {
   "total_count": 108,
-  "last_updated": "2026-07-13T12:51:07.696194+00:00",
+  "last_updated": "2026-07-13T14:02:25.387239+00:00",
   "per_source": {
-    "teamgoat": 36,
+    "msone": 12,
     "moviemirror": 60,
-    "msone": 12
+    "teamgoat": 36
   },
   "filters": {
     "languages": [
@@ -15,8 +15,15 @@
       "Japanese",
       "Korean",
       "Malayalam",
+      "Mandarin",
+      "Spanish",
       "Thai",
-      "Unknown"
+      "Unknown",
+      "അറബി",
+      "കൻ്റോണീസ്",
+      "ചെക്ക്",
+      "ചൈനീസ്",
+      "തെലുങ്ക്"
     ],
     "genres": [
       "Action",
