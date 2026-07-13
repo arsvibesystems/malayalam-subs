@@ -239,12 +239,18 @@ class MovieMirrorScraper(BaseScraper):
                 cell = row.find("td")
                 if header and cell:
                     header_text = self._clean_text(header.get_text()).lower()
-                    if any(kw in header_text for kw in keywords):
-                        return self._clean_text(cell.get_text())
+                    for kw in keywords:
+                        if kw in header_text:
+                            # Prevent 'ഭാഷ' from matching 'പരിഭാഷ'
+                            if kw == "ഭാഷ" and "പരിഭാഷ" in header_text:
+                                continue
+                            return self._clean_text(cell.get_text())
 
         # Search in labeled divs/spans
         for kw in keywords:
-            pattern = re.compile(rf'{re.escape(kw)}\s*[:\-–]\s*(.+)', re.IGNORECASE)
+            # Add a negative lookbehind to prevent matching "പരിഭാഷ" when searching for "ഭാഷ"
+            prefix = r'(?<!പരി)' if kw == "ഭാഷ" else ''
+            pattern = re.compile(rf'{prefix}{re.escape(kw)}\s*[:\-–]\s*(.+)', re.IGNORECASE)
             match = pattern.search(page_text)
             if match:
                 value = match.group(1).strip()

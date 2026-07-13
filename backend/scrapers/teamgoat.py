@@ -111,17 +111,17 @@ class TeamGoatScraper(BaseScraper):
                         header_text = self._clean_text(header.get_text()).lower()
                         cell_text = self._clean_text(cell.get_text())
 
-                        if "ഭാഷ" in header_text or "language" in header_text:
-                            language = cell_text
-                        elif "സംവിധാനം" in header_text or "director" in header_text:
-                            director = cell_text
-                        elif "പരിഭാഷ" in header_text or "translat" in header_text:
+                        if "പരിഭാഷ" in header_text or "translat" in header_text:
                             # Check if there's a link (translator profile)
                             translator_link = cell.find("a")
                             if translator_link:
                                 translator = self._clean_text(translator_link.get_text())
                             else:
                                 translator = cell_text
+                        elif "ഭാഷ" in header_text or "language" in header_text:
+                            language = cell_text
+                        elif "സംവിധാനം" in header_text or "director" in header_text:
+                            director = cell_text
                         elif "genre" in header_text:
                             genre = cell_text
 

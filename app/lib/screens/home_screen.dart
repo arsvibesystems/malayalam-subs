@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import '../widgets/subtitle_card.dart';
 import 'detail_screen.dart';
 import 'search_screen.dart';
+import 'category_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -254,11 +255,48 @@ class HomeScreen extends StatelessWidget {
     return [
       _buildCategoriesRow(context, provider),
       const SliverToBoxAdapter(child: SizedBox(height: 24)),
-      _buildHorizontalList(context, 'Latest Releases', latest),
+      _buildHorizontalList(
+        context,
+        'Latest Releases',
+        latest,
+        onSeeMore: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const CategoryScreen(title: 'Latest Releases'),
+          ),
+        ),
+      ),
       const SliverToBoxAdapter(child: SizedBox(height: 12)),
-      _buildHorizontalList(context, 'Movies', movies),
+      _buildHorizontalList(
+        context,
+        'Movies',
+        movies,
+        onSeeMore: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const CategoryScreen(
+              title: 'All Movies',
+              releaseTypeFilter: 'movie',
+            ),
+          ),
+        ),
+      ),
       const SliverToBoxAdapter(child: SizedBox(height: 12)),
-      if (series.isNotEmpty) _buildHorizontalList(context, 'Series', series),
+      if (series.isNotEmpty)
+        _buildHorizontalList(
+          context,
+          'Series',
+          series,
+          onSeeMore: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const CategoryScreen(
+                title: 'All Series',
+                releaseTypeFilter: 'series',
+              ),
+            ),
+          ),
+        ),
     ];
   }
 
@@ -323,21 +361,44 @@ class HomeScreen extends StatelessWidget {
   Widget _buildHorizontalList(
     BuildContext context,
     String title,
-    List<Subtitle> items,
-  ) {
+    List<Subtitle> items, {
+    VoidCallback? onSeeMore,
+  }) {
     return SliverToBoxAdapter(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Text(
-              title,
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (onSeeMore != null)
+                  TextButton(
+                    onPressed: onSeeMore,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.accent,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text(
+                      'See More >',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           SizedBox(
