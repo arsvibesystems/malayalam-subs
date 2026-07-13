@@ -161,14 +161,15 @@ class TeamGoatScraper(BaseScraper):
 
             # Also search for rating in the broader page
             if imdb_rating is None:
-                for text in soup.find_all(string=re.compile(r'★.*\d+\.\d+/10')):
-                    match = re.search(r'(\d+\.?\d*)/10', text)
-                    if match:
-                        try:
-                            imdb_rating = float(match.group(1))
-                        except ValueError:
-                            pass
-                        break
+                match = re.search(r'★\s*(\d+(?:\.\d+)?)/10', soup.get_text())
+                if not match:
+                    # sometimes the star is separated by newlines
+                    match = re.search(r'(\d+(?:\.\d+)?)/10', soup.get_text())
+                if match:
+                    try:
+                        imdb_rating = float(match.group(1))
+                    except ValueError:
+                        pass
 
             data["imdb_rating"] = imdb_rating
             data["imdb_url"] = imdb_url

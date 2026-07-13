@@ -85,13 +85,13 @@ class SubtitleCard extends StatelessWidget {
                   // IMDB rating badge
                   if (subtitle.imdbRating != null)
                     Positioned(
-                      top: 8,
+                      bottom: 8,
                       left: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: _getRatingColor(subtitle.imdbRating!),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(6),
                           boxShadow: [
                             BoxShadow(
                               color: _getRatingColor(subtitle.imdbRating!).withValues(alpha: 0.4),
@@ -103,13 +103,13 @@ class SubtitleCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star_rounded, color: Colors.white, size: 14),
-                            const SizedBox(width: 3),
+                            const Icon(Icons.star_rounded, color: Colors.white, size: 10),
+                            const SizedBox(width: 2),
                             Text(
                               subtitle.imdbRating!.toStringAsFixed(1),
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 12,
+                                fontSize: 9,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -123,16 +123,16 @@ class SubtitleCard extends StatelessWidget {
                     top: 8,
                     right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: AppTheme.getSourceColor(subtitle.sourceSite).withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         AppTheme.getSourceLabel(subtitle.sourceSite),
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 10,
+                          fontSize: 8,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -145,21 +145,21 @@ class SubtitleCard extends StatelessWidget {
                       bottom: 8,
                       right: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppTheme.accentTeal.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.tv, color: Colors.white, size: 12),
-                            SizedBox(width: 3),
+                            Icon(Icons.tv, color: Colors.white, size: 10),
+                            SizedBox(width: 2),
                             Text(
                               'SERIES',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 10,
+                                fontSize: 8,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 0.5,
                               ),

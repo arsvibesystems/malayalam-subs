@@ -67,11 +67,16 @@ class DetailScreen extends StatelessWidget {
           ),
 
           // Content
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          SliverSafeArea(
+            top: false,
+            sliver: SliverToBoxAdapter(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 800),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Title
                   Text(
@@ -296,6 +301,9 @@ class DetailScreen extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    ),
         ],
       ),
     );

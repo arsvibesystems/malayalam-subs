@@ -8,14 +8,13 @@ import '../theme/app_theme.dart';
 import '../widgets/subtitle_card.dart';
 import 'detail_screen.dart';
 import 'search_screen.dart';
-import 'settings_screen.dart';
-
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: _buildDrawer(context),
       body: SafeArea(
         child: Consumer<SubtitleProvider>(
           builder: (context, provider, _) {
@@ -30,23 +29,25 @@ class HomeScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
                     child: Row(
-                      children: [
+                        // Drawer Menu Button
+                        Builder(
+                          builder: (context) => _buildIconButton(
+                            icon: Icons.menu_rounded,
+                            onTap: () => Scaffold.of(context).openDrawer(),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
                         // App title
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              ShaderMask(
-                                shaderCallback: (bounds) => const LinearGradient(
-                                  colors: [AppTheme.accent, AppTheme.accentGold],
-                                ).createShader(bounds),
-                                child: const Text(
-                                  'മലയാളം Subs',
-                                  style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
-                                  ),
+                              const Text(
+                                'Malayalam Subs',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -70,25 +71,11 @@ class HomeScreen extends StatelessWidget {
                             MaterialPageRoute(builder: (_) => const SearchScreen()),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        // Settings button
-                        _buildIconButton(
-                          icon: Icons.settings_rounded,
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                          ),
-                        ),
                       ],
                     ),
                   ),
                 ),
 
-                // Stats bar
-                if (!provider.isLoading && provider.allSubtitles.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: _buildStatsBar(provider),
-                  ),
 
                 // Content
                 if (provider.isLoading)
@@ -129,85 +116,114 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsBar(SubtitleProvider provider) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.accent.withValues(alpha: 0.15),
-            AppTheme.accentGold.withValues(alpha: 0.08),
+  Widget _buildDrawer(BuildContext context) {
+    final provider = Provider.of<SubtitleProvider>(context);
+    return Drawer(
+      backgroundColor: AppTheme.bgDark,
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppTheme.bgCard,
+                border: const Border(
+                  bottom: BorderSide(color: AppTheme.dividerColor),
+                ),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.query_stats_rounded, color: AppTheme.accent, size: 40),
+                  SizedBox(height: 16),
+                  Text(
+                    'Stats',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!provider.isLoading && provider.allSubtitles.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    _buildDrawerStatRow(
+                      '${provider.allSubtitles.length}',
+                      'Total Subtitles',
+                      Icons.subtitles_rounded,
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDrawerStatRow(
+                      '${provider.allSubtitles.where((s) => s.releaseType == "movie").length}',
+                      'Movies',
+                      Icons.movie_rounded,
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDrawerStatRow(
+                      '${provider.allSubtitles.where((s) => s.releaseType == "series").length}',
+                      'Series',
+                      Icons.tv_rounded,
+                    ),
+                    const SizedBox(height: 24),
+                    _buildDrawerStatRow(
+                      '${provider.stats.perSource.length}',
+                      'Sources',
+                      Icons.language_rounded,
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.accent.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatItem(
-            '${provider.allSubtitles.length}',
-            'Total',
-            Icons.subtitles_rounded,
-          ),
-          _buildStatDivider(),
-          _buildStatItem(
-            '${provider.allSubtitles.where((s) => s.releaseType == "movie").length}',
-            'Movies',
-            Icons.movie_rounded,
-          ),
-          _buildStatDivider(),
-          _buildStatItem(
-            '${provider.allSubtitles.where((s) => s.releaseType == "series").length}',
-            'Series',
-            Icons.tv_rounded,
-          ),
-          _buildStatDivider(),
-          _buildStatItem(
-            '${provider.stats.perSource.length}',
-            'Sources',
-            Icons.language_rounded,
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildStatItem(String value, String label, IconData icon) {
-    return Column(
+  Widget _buildDrawerStatRow(String value, String label, IconData icon) {
+    return Row(
       children: [
-        Icon(icon, color: AppTheme.accentGold, size: 20),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppTheme.bgCardLight,
+            borderRadius: BorderRadius.circular(12),
           ),
+          child: Icon(icon, color: AppTheme.accentGold, size: 24),
         ),
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppTheme.textMuted,
-            fontSize: 11,
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildStatDivider() {
-    return Container(
-      height: 40,
-      width: 1,
-      color: AppTheme.dividerColor,
-    );
-  }
+
 
   List<Widget> _buildNetflixLayout(BuildContext context, SubtitleProvider provider) {
     // Top 15 Latest

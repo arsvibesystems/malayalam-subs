@@ -1,4 +1,4 @@
-package com.malayalamsubs.malayalam_subs_app
+package com.arsvibesystems.malayalamsubs
 
 import io.flutter.embedding.android.FlutterActivity
 

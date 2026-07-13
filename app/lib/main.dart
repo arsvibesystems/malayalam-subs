@@ -25,7 +25,7 @@ class MalayalamSubsApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => SubtitleProvider()..loadSubtitles(),
       child: MaterialApp(
-        title: 'മലയാളം Subs',
+        title: 'Malayalam Subs',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
         home: const HomeScreen(),

@@ -202,8 +202,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       : AnimationLimiter(
                           child: GridView.builder(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: (MediaQuery.of(context).size.width / 160).floor().clamp(2, 6),
                               childAspectRatio: 0.58,
                               crossAxisSpacing: 12,
                               mainAxisSpacing: 12,
