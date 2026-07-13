@@ -1,8 +1,10 @@
 {
-  "total_count": 12,
-  "last_updated": "2026-07-13T08:58:19.408217+00:00",
+  "total_count": 108,
+  "last_updated": "2026-07-13T10:07:38.692413+00:00",
   "per_source": {
-    "msone": 12
+    "msone": 12,
+    "moviemirror": 60,
+    "teamgoat": 36
   },
   "filters": {
     "languages": [
@@ -12,18 +14,57 @@
       "Japanese",
       "Korean",
       "Thai",
+      "Unknown",
+      "അനന്തു പ്രസാദ്",
+      "അഭിഷേക് ഫീകോ",
+      "അശ്വിൻ കൃഷ്ണ ബി ആർ",
       "ഗ്രീക്ക്",
-      "മലയാളം സിനിമകൾ"
+      "തഖ്‌യുദ്ധീൻ കൊളാടിക്കൽ",
+      "നൗഫൽ കെ എ",
+      "ഫഹദ് ഒറ്റപ്പാലം",
+      "ബ്ലൂ മങ്കി",
+      "മലയാളം സിനിമകൾ",
+      "മായാവി",
+      "ഷാഫി വെൽഫെയർ",
+      "സനോജ് ജാനകി",
+      "സുന്ദരൻ",
+      "ഹകീം സുദുഫ്",
+      "ഹരിശങ്കർ പുലിമുഖത്ത് മഠം",
+      "ഹാരിസ് പി വി ഇടച്ചലം"
     ],
     "genres": [
       "Action",
+      "Adult",
+      "Adventure",
+      "Animation",
       "Comedy",
+      "Coming of Age",
       "Crime",
+      "Cyberpunk",
+      "Dark Fantasy",
+      "Docudrama",
+      "Documentary",
       "Drama",
+      "Erotic",
+      "Erotic Thriller",
+      "Family",
+      "Fantasy",
+      "Gangster",
+      "History",
       "Horror",
+      "K-Drama",
+      "Martial Arts",
+      "Musical",
       "Mystery",
+      "Political Thriller",
+      "Psychological Thriller",
       "Romance",
+      "Sci-Fi",
+      "Short",
+      "Spy",
+      "Superhero",
       "Thriller",
+      "War",
       "Western",
       "അഡ്വെഞ്ചർ",
       "അനിമേഷൻ",
@@ -42,7 +83,9 @@
       "സോണി ഫിലിപ്പ്"
     ],
     "sources": [
-      "msone"
+      "moviemirror",
+      "msone",
+      "teamgoat"
     ],
     "release_types": [
       "movie",
