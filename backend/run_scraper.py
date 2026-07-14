@@ -33,46 +33,103 @@ logger = logging.getLogger("main")
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
 
 
+def assign_interleaved_timestamps(items: List[Dict]) -> List[Dict]:
+    """
+    Assign updated_at timestamps that interleave items across all sites
+    based on their release_number (or position for sites without it).
+    
+    This ensures the JSON order reflects true chronological publication
+    order across all 3 subtitle sites, not just scrape-time ordering.
+    """
+    from collections import defaultdict
+
+    # Group by source site
+    by_site = defaultdict(list)
+    for item in items:
+        by_site[item.get("source_site", "unknown")].append(item)
+
+    # Sort each site's items oldest → newest
+    # MSone & TeamGoat: by release_number
+    # MovieMirror: by release_number if available, else by existing updated_at
+    for site, site_items in by_site.items():
+        if site in ("msone", "teamgoat"):
+            site_items.sort(key=lambda x: x.get("release_number") or 0)
+        else:
+            # MovieMirror: try release_number first, fall back to updated_at
+            has_rn = any(x.get("release_number") for x in site_items)
+            if has_rn:
+                site_items.sort(key=lambda x: x.get("release_number") or 0)
+            else:
+                site_items.sort(key=lambda x: x.get("updated_at", ""))
+
+    # Assign chronological percentage (0.0 = oldest, 1.0 = newest)
+    all_items = []
+    for site, site_items in by_site.items():
+        for i, item in enumerate(site_items):
+            item["_chrono_pct"] = i / max(1, len(site_items) - 1)
+            all_items.append(item)
+
+    # Sort all items by percentage; use year as tiebreaker
+    all_items.sort(key=lambda x: (x["_chrono_pct"], x.get("year") or 0))
+
+    # Assign new timestamps: 1 hour apart starting from 2020-01-01
+    base_date = datetime(2020, 1, 1, tzinfo=timezone.utc)
+    for i, item in enumerate(all_items):
+        new_date = base_date + timedelta(hours=i)
+        item["updated_at"] = new_date.isoformat()
+        item["created_at"] = new_date.isoformat()
+        del item["_chrono_pct"]
+
+    # Reverse to newest-first
+    all_items.reverse()
+    return all_items
+
+
 def merge_results(existing: List[Dict], new_items: List[Dict]) -> List[Dict]:
     """
     Merge new scraped items into existing data.
     Uses 'slug' as unique key — updates existing items, adds new ones.
+    
+    Key design decisions:
+    - Re-scraped existing items: content is updated but timestamps are PRESERVED
+    - Genuinely new items: added with a temporary timestamp, then the full list
+      is re-interleaved using release_number-based chronological ordering
     """
     existing_map = {item["slug"]: item for item in existing}
+    has_new = False
 
-    # We want new items to retain the order they were scraped in (newest first).
-    # Since datetime.now() inside a loop gives increasing timestamps,
-    # sorting by updated_at descending would reverse the order!
-    # Instead, we assign a decreasing timestamp artificially for the scrape batch.
-    base_time = datetime.now(timezone.utc)
-    
-    for i, item in enumerate(new_items):
+    for item in new_items:
         slug = item.get("slug", "")
         if not slug:
             continue
 
-        # Subtract milliseconds so earlier items get NEWER timestamps
-        item_time = (base_time - timedelta(milliseconds=i*10)).isoformat()
-
         if slug in existing_map:
-            # Update existing item but keep the original created_at
+            # EXISTING item re-scraped: update content but PRESERVE timestamps
             old_created = existing_map[slug].get("created_at")
+            old_updated = existing_map[slug].get("updated_at")
             existing_map[slug].update(item)
             if old_created:
                 existing_map[slug]["created_at"] = old_created
-            existing_map[slug]["updated_at"] = item_time
+            if old_updated:
+                existing_map[slug]["updated_at"] = old_updated
         else:
-            # New item
-            item["created_at"] = item_time
-            item["updated_at"] = item_time
+            # GENUINELY NEW item
+            now_str = datetime.now(timezone.utc).isoformat()
+            item["created_at"] = now_str
+            item["updated_at"] = now_str
             existing_map[slug] = item
+            has_new = True
+            logger.info(f"  ★ New item: {slug}")
 
-    # Sort by updated_at descending (newest first)
-    merged = sorted(
-        existing_map.values(),
-        key=lambda x: x.get("updated_at", ""),
-        reverse=True
-    )
+    merged = list(existing_map.values())
+
+    if has_new:
+        # New items were added — re-interleave everything to slot them correctly
+        logger.info("Re-interleaving timestamps to incorporate new items...")
+        merged = assign_interleaved_timestamps(merged)
+    else:
+        # No new items — just keep existing order (sorted by updated_at desc)
+        merged.sort(key=lambda x: x.get("updated_at", ""), reverse=True)
 
     return merged
 

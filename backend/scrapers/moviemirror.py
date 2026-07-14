@@ -165,7 +165,7 @@ class MovieMirrorScraper(BaseScraper):
 
             # Remove duplicates and join
             genres = list(dict.fromkeys(genres))
-            data["genre"] = ", ".join(genres) if genres else ""
+            data["genres"] = ", ".join(genres) if genres else ""
 
             # Translator
             data["translator"] = self._extract_field(soup, page_text,
