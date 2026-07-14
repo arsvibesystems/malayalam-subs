@@ -410,7 +410,7 @@ class HomeScreen extends StatelessWidget {
               child: GestureDetector(
                 onTap: () {
                   provider.clearFilters();
-                  provider.setGenreFilter(cat);
+                  provider.toggleGenreFilter(cat);
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const SearchScreen()),

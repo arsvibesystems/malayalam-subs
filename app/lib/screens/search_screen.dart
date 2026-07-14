@@ -141,7 +141,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   duration: const Duration(milliseconds: 300),
                 ),
 
-                // Results count + sort
+                // Active filters and clear all
+                _buildActiveFilters(provider),
+
+                // Results count
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
                   child: Row(
@@ -154,38 +157,6 @@ class _SearchScreenState extends State<SearchScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const Spacer(),
-                      if (provider.hasActiveFilters)
-                        GestureDetector(
-                          onTap: () {
-                            provider.clearFilters();
-                            _searchController.clear();
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accent.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.clear_all_rounded, color: AppTheme.accent, size: 16),
-                                SizedBox(width: 4),
-                                Text(
-                                  'Clear all',
-                                  style: TextStyle(
-                                    color: AppTheme.accent,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      const SizedBox(width: 8),
-                      _buildSortDropdown(provider),
                     ],
                   ),
                 ),
@@ -251,6 +222,81 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  Widget _buildActiveFilters(SubtitleProvider provider) {
+    if (!provider.hasActiveFilters) return const SizedBox.shrink();
+
+    final List<Widget> chips = [];
+    
+    void addChips(List<String> items, Function(String) onRemove) {
+      for (final item in items) {
+        chips.add(
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: InputChip(
+              label: Text(item, style: const TextStyle(color: Colors.white, fontSize: 12)),
+              backgroundColor: AppTheme.bgCard,
+              deleteIcon: const Icon(Icons.close_rounded, size: 14, color: AppTheme.textMuted),
+              onDeleted: () => onRemove(item),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              side: const BorderSide(color: AppTheme.dividerColor),
+            ),
+          ),
+        );
+      }
+    }
+
+    addChips(provider.selectedLanguages, provider.toggleLanguageFilter);
+    addChips(provider.selectedGenres, provider.toggleGenreFilter);
+    addChips(provider.selectedSources, provider.toggleSourceFilter);
+    addChips(provider.selectedTranslators, provider.toggleTranslatorFilter);
+    addChips(provider.selectedReleaseTypes, provider.toggleReleaseTypeFilter);
+
+    if (chips.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'ACTIVE FILTERS',
+                style: TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  provider.clearFilters();
+                  _searchController.clear();
+                },
+                child: const Text(
+                  'Clear all',
+                  style: TextStyle(
+                    color: AppTheme.accent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: chips),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFilterPanel(SubtitleProvider provider) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -275,83 +321,80 @@ class _SearchScreenState extends State<SearchScreen> {
           const SizedBox(height: 14),
 
           // Language filter
-          _buildFilterDropdown(
+          _buildMultiSelectField(
             'Movie Language',
             Icons.language_rounded,
-            provider.selectedLanguage,
+            provider.selectedLanguages,
             provider.stats.filters.languages,
-            (val) => provider.setLanguageFilter(val),
+            (val) => provider.toggleLanguageFilter(val),
           ),
           const SizedBox(height: 10),
 
           // Genre filter
-          _buildFilterDropdown(
+          _buildMultiSelectField(
             'Genre',
             Icons.theater_comedy_rounded,
-            provider.selectedGenre,
+            provider.selectedGenres,
             provider.stats.filters.genres,
-            (val) => provider.setGenreFilter(val),
+            (val) => provider.toggleGenreFilter(val),
           ),
           const SizedBox(height: 10),
 
           // Source filter
-          _buildFilterDropdown(
+          _buildMultiSelectField(
             'Source Site',
             Icons.public_rounded,
-            provider.selectedSource,
+            provider.selectedSources,
             provider.stats.filters.sources,
-            (val) => provider.setSourceFilter(val),
+            (val) => provider.toggleSourceFilter(val),
           ),
           const SizedBox(height: 10),
 
           // Translator filter
-          _buildFilterDropdown(
+          _buildMultiSelectField(
             'Translator',
             Icons.person_rounded,
-            provider.selectedTranslator,
+            provider.selectedTranslators,
             provider.stats.filters.translators,
-            (val) => provider.setTranslatorFilter(val),
+            (val) => provider.toggleTranslatorFilter(val),
           ),
           const SizedBox(height: 10),
 
           // Release type filter
-          _buildFilterDropdown(
+          _buildMultiSelectField(
             'Type',
             Icons.movie_rounded,
-            provider.selectedReleaseType,
+            provider.selectedReleaseTypes,
             provider.stats.filters.releaseTypes,
-            (val) => provider.setReleaseTypeFilter(val),
+            (val) => provider.toggleReleaseTypeFilter(val),
           ),
           const SizedBox(height: 14),
 
-          // IMDB Rating slider
+          // Sort By Section
           const Text(
-            'IMDb Rating',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-          ),
-          const SizedBox(height: 4),
-          RangeSlider(
-            values: RangeValues(provider.minRating, provider.maxRating),
-            min: 0,
-            max: 10,
-            divisions: 20,
-            activeColor: AppTheme.accentGold,
-            inactiveColor: AppTheme.bgCardLight,
-            labels: RangeLabels(
-              provider.minRating.toStringAsFixed(1),
-              provider.maxRating.toStringAsFixed(1),
-            ),
-            onChanged: (values) {
-              provider.setRatingRange(values.start, values.end);
-            },
-          ),
-          Center(
-            child: Text(
-              '${provider.minRating.toStringAsFixed(1)} — ${provider.maxRating.toStringAsFixed(1)}',
-              style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+            'SORT BY',
+            style: TextStyle(
+              color: AppTheme.textMuted,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildSortChip('Latest', 'latest', provider),
+              _buildSortChip('Oldest', 'oldest', provider),
+              _buildSortChip('Rating ↓', 'rating', provider),
+              _buildSortChip('A-Z', 'title', provider),
+              _buildSortChip('Release No. ↑', 'release_asc', provider),
+              _buildSortChip('Release No. ↓', 'release_desc', provider),
+            ],
+          ),
+          const SizedBox(height: 24),
+
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -377,76 +420,126 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildFilterDropdown(
+  Widget _buildMultiSelectField(
     String label,
     IconData icon,
-    String? selectedValue,
+    List<String> selectedValues,
     List<String> options,
-    ValueChanged<String?> onChanged,
+    ValueChanged<String> onToggle,
   ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.bgDark,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String?>(
-          value: selectedValue,
-          isExpanded: true,
-          dropdownColor: AppTheme.bgCard,
-          icon: const Icon(Icons.expand_more_rounded, color: AppTheme.textMuted),
-          hint: Row(
-            children: [
-              Icon(icon, color: AppTheme.textMuted, size: 18),
-              const SizedBox(width: 10),
-              Text(label, style: const TextStyle(color: AppTheme.textMuted, fontSize: 14)),
-            ],
-          ),
-          items: [
-            DropdownMenuItem<String?>(
-              value: null,
-              child: Text('All $label', style: const TextStyle(color: AppTheme.textSecondary)),
+    return GestureDetector(
+      onTap: () {
+        _showMultiSelectSheet(label, options, selectedValues, onToggle);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppTheme.bgDark,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: AppTheme.textMuted, size: 18),
+                const SizedBox(width: 10),
+                Text(
+                  selectedValues.isEmpty
+                      ? 'All $label'
+                      : '$label (${selectedValues.length})',
+                  style: TextStyle(
+                    color: selectedValues.isEmpty ? AppTheme.textMuted : AppTheme.textPrimary,
+                    fontSize: 14,
+                    fontWeight: selectedValues.isEmpty ? FontWeight.normal : FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            ...options.map((opt) => DropdownMenuItem(
-              value: opt,
-              child: Text(
-                opt,
-                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-                overflow: TextOverflow.ellipsis,
-              ),
-            )),
+            const Icon(Icons.expand_more_rounded, color: AppTheme.textMuted),
           ],
-          onChanged: onChanged,
         ),
       ),
     );
   }
 
-  Widget _buildSortDropdown(SubtitleProvider provider) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: provider.sortBy,
-          dropdownColor: AppTheme.bgCard,
-          icon: const Icon(Icons.sort_rounded, color: AppTheme.textMuted, size: 18),
-          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-          items: const [
-            DropdownMenuItem(value: 'latest', child: Text('Latest')),
-            DropdownMenuItem(value: 'rating', child: Text('Rating ↓')),
-            DropdownMenuItem(value: 'title', child: Text('A-Z')),
-            DropdownMenuItem(value: 'year', child: Text('Year ↓')),
-          ],
-          onChanged: (val) {
-            if (val != null) provider.setSortBy(val);
+  void _showMultiSelectSheet(
+    String title,
+    List<String> options,
+    List<String> selectedValues,
+    ValueChanged<String> onToggle,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.6,
+              decoration: const BoxDecoration(
+                color: AppTheme.bgCard,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.dividerColor, borderRadius: BorderRadius.circular(2))),
+                  const SizedBox(height: 16),
+                  Text('Select $title', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  const Divider(color: AppTheme.dividerColor, height: 1),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: options.length,
+                      itemBuilder: (context, index) {
+                        final option = options[index];
+                        final isSelected = selectedValues.contains(option);
+                        return CheckboxListTile(
+                          value: isSelected,
+                          title: Text(option, style: TextStyle(color: isSelected ? Colors.white : AppTheme.textSecondary)),
+                          activeColor: AppTheme.accent,
+                          checkColor: Colors.white,
+                          side: const BorderSide(color: AppTheme.textMuted),
+                          onChanged: (val) {
+                            onToggle(option);
+                            setSheetState(() {});
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
           },
+        );
+      },
+    );
+  }
+
+  Widget _buildSortChip(String label, String value, SubtitleProvider provider) {
+    final isSelected = provider.sortBy == value;
+    return ChoiceChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          color: isSelected ? Colors.white : AppTheme.textSecondary,
+          fontSize: 12,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
+      selected: isSelected,
+      selectedColor: AppTheme.accent,
+      backgroundColor: AppTheme.bgDark,
+      side: BorderSide(
+        color: isSelected ? AppTheme.accent : AppTheme.dividerColor,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      onSelected: (selected) {
+        if (selected) provider.setSortBy(value);
+      },
     );
   }
 }

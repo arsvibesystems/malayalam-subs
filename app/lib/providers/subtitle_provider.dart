@@ -11,13 +11,11 @@ class SubtitleProvider extends ChangeNotifier {
 
   // Filter state
   String _searchQuery = '';
-  String? _selectedLanguage;
-  String? _selectedGenre;
-  String? _selectedSource;
-  String? _selectedTranslator;
-  String? _selectedReleaseType;
-  double _minRating = 0;
-  double _maxRating = 10;
+  List<String> _selectedLanguages = [];
+  List<String> _selectedGenres = [];
+  List<String> _selectedSources = [];
+  List<String> _selectedTranslators = [];
+  List<String> _selectedReleaseTypes = [];
   String _sortBy = 'latest';
 
   // Getters
@@ -27,13 +25,11 @@ class SubtitleProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   String get searchQuery => _searchQuery;
-  String? get selectedLanguage => _selectedLanguage;
-  String? get selectedGenre => _selectedGenre;
-  String? get selectedSource => _selectedSource;
-  String? get selectedTranslator => _selectedTranslator;
-  String? get selectedReleaseType => _selectedReleaseType;
-  double get minRating => _minRating;
-  double get maxRating => _maxRating;
+  List<String> get selectedLanguages => _selectedLanguages;
+  List<String> get selectedGenres => _selectedGenres;
+  List<String> get selectedSources => _selectedSources;
+  List<String> get selectedTranslators => _selectedTranslators;
+  List<String> get selectedReleaseTypes => _selectedReleaseTypes;
   String get sortBy => _sortBy;
 
   /// Load all subtitles and stats from the API
@@ -69,44 +65,56 @@ class SubtitleProvider extends ChangeNotifier {
   }
 
   /// Set language filter
-  void setLanguageFilter(String? language) {
-    _selectedLanguage = language;
+  void toggleLanguageFilter(String language) {
+    if (_selectedLanguages.contains(language)) {
+      _selectedLanguages.remove(language);
+    } else {
+      _selectedLanguages.add(language);
+    }
     _applyFilters();
     notifyListeners();
   }
 
   /// Set genre filter
-  void setGenreFilter(String? genre) {
-    _selectedGenre = genre;
+  void toggleGenreFilter(String genre) {
+    if (_selectedGenres.contains(genre)) {
+      _selectedGenres.remove(genre);
+    } else {
+      _selectedGenres.add(genre);
+    }
     _applyFilters();
     notifyListeners();
   }
 
   /// Set source site filter
-  void setSourceFilter(String? source) {
-    _selectedSource = source;
+  void toggleSourceFilter(String source) {
+    if (_selectedSources.contains(source)) {
+      _selectedSources.remove(source);
+    } else {
+      _selectedSources.add(source);
+    }
     _applyFilters();
     notifyListeners();
   }
 
   /// Set translator filter
-  void setTranslatorFilter(String? translator) {
-    _selectedTranslator = translator;
+  void toggleTranslatorFilter(String translator) {
+    if (_selectedTranslators.contains(translator)) {
+      _selectedTranslators.remove(translator);
+    } else {
+      _selectedTranslators.add(translator);
+    }
     _applyFilters();
     notifyListeners();
   }
 
   /// Set release type filter
-  void setReleaseTypeFilter(String? type) {
-    _selectedReleaseType = type;
-    _applyFilters();
-    notifyListeners();
-  }
-
-  /// Set rating range
-  void setRatingRange(double min, double max) {
-    _minRating = min;
-    _maxRating = max;
+  void toggleReleaseTypeFilter(String type) {
+    if (_selectedReleaseTypes.contains(type)) {
+      _selectedReleaseTypes.remove(type);
+    } else {
+      _selectedReleaseTypes.add(type);
+    }
     _applyFilters();
     notifyListeners();
   }
@@ -121,13 +129,11 @@ class SubtitleProvider extends ChangeNotifier {
   /// Clear all filters
   void clearFilters() {
     _searchQuery = '';
-    _selectedLanguage = null;
-    _selectedGenre = null;
-    _selectedSource = null;
-    _selectedTranslator = null;
-    _selectedReleaseType = null;
-    _minRating = 0;
-    _maxRating = 10;
+    _selectedLanguages.clear();
+    _selectedGenres.clear();
+    _selectedSources.clear();
+    _selectedTranslators.clear();
+    _selectedReleaseTypes.clear();
     _sortBy = 'latest';
     _applyFilters();
     notifyListeners();
@@ -135,13 +141,11 @@ class SubtitleProvider extends ChangeNotifier {
 
   bool get hasActiveFilters =>
       _searchQuery.isNotEmpty ||
-      _selectedLanguage != null ||
-      _selectedGenre != null ||
-      _selectedSource != null ||
-      _selectedTranslator != null ||
-      _selectedReleaseType != null ||
-      _minRating > 0 ||
-      _maxRating < 10;
+      _selectedLanguages.isNotEmpty ||
+      _selectedGenres.isNotEmpty ||
+      _selectedSources.isNotEmpty ||
+      _selectedTranslators.isNotEmpty ||
+      _selectedReleaseTypes.isNotEmpty;
 
   /// Apply all active filters and sorting
   void _applyFilters() {
@@ -150,51 +154,46 @@ class SubtitleProvider extends ChangeNotifier {
     // Search
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
+      final cleanQuery = query.replaceAll('#', ''); // Allow searching like "#123"
+      
       results = results.where((s) {
+        final releaseNumStr = s.releaseNumber?.toString() ?? '';
+        
         return s.title.toLowerCase().contains(query) ||
             s.translator.toLowerCase().contains(query) ||
             s.movieLanguage.toLowerCase().contains(query) ||
-            s.genres.toLowerCase().contains(query);
+            s.genres.toLowerCase().contains(query) ||
+            s.releaseType.toLowerCase().contains(query) ||
+            (cleanQuery.isNotEmpty && releaseNumStr == cleanQuery);
       }).toList();
     }
 
     // Language filter
-    if (_selectedLanguage != null) {
-      results = results.where((s) =>
-          s.movieLanguage.toLowerCase().contains(_selectedLanguage!.toLowerCase())
-      ).toList();
+    if (_selectedLanguages.isNotEmpty) {
+      results = results.where((s) => _selectedLanguages.any((lang) => 
+          s.movieLanguage.toLowerCase().contains(lang.toLowerCase()))).toList();
     }
 
     // Genre filter
-    if (_selectedGenre != null) {
-      results = results.where((s) =>
-          s.genres.toLowerCase().contains(_selectedGenre!.toLowerCase())
-      ).toList();
+    if (_selectedGenres.isNotEmpty) {
+      results = results.where((s) => _selectedGenres.any((genre) => 
+          s.genres.toLowerCase().contains(genre.toLowerCase()))).toList();
     }
 
     // Source filter
-    if (_selectedSource != null) {
-      results = results.where((s) => s.sourceSite == _selectedSource).toList();
+    if (_selectedSources.isNotEmpty) {
+      results = results.where((s) => _selectedSources.contains(s.sourceSite)).toList();
     }
 
     // Translator filter
-    if (_selectedTranslator != null) {
-      results = results.where((s) =>
-          s.translator.toLowerCase().contains(_selectedTranslator!.toLowerCase())
-      ).toList();
+    if (_selectedTranslators.isNotEmpty) {
+      results = results.where((s) => _selectedTranslators.any((trans) => 
+          s.translator.toLowerCase().contains(trans.toLowerCase()))).toList();
     }
 
     // Release type filter
-    if (_selectedReleaseType != null) {
-      results = results.where((s) => s.releaseType == _selectedReleaseType).toList();
-    }
-
-    // Rating filter
-    if (_minRating > 0 || _maxRating < 10) {
-      results = results.where((s) {
-        if (s.imdbRating == null) return _minRating == 0;
-        return s.imdbRating! >= _minRating && s.imdbRating! <= _maxRating;
-      }).toList();
+    if (_selectedReleaseTypes.isNotEmpty) {
+      results = results.where((s) => _selectedReleaseTypes.contains(s.releaseType)).toList();
     }
 
     // Sorting
@@ -207,6 +206,15 @@ class SubtitleProvider extends ChangeNotifier {
         break;
       case 'year':
         results.sort((a, b) => (b.year ?? 0).compareTo(a.year ?? 0));
+        break;
+      case 'oldest':
+        results.sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
+        break;
+      case 'release_desc':
+        results.sort((a, b) => (b.releaseNumber ?? 0).compareTo(a.releaseNumber ?? 0));
+        break;
+      case 'release_asc':
+        results.sort((a, b) => (a.releaseNumber ?? 0).compareTo(b.releaseNumber ?? 0));
         break;
       case 'latest':
       default:
