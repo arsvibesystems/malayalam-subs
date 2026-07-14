@@ -19,7 +19,8 @@ class ApiService {
           .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
-        final List<dynamic> jsonList = json.decode(response.body);
+        final String utf8Body = utf8.decode(response.bodyBytes);
+        final List<dynamic> jsonList = json.decode(utf8Body);
         return jsonList.map((json) => Subtitle.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load subtitles: ${response.statusCode}');
@@ -38,7 +39,8 @@ class ApiService {
           .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
-        return SubtitleStats.fromJson(json.decode(response.body));
+        final String utf8Body = utf8.decode(response.bodyBytes);
+        return SubtitleStats.fromJson(json.decode(utf8Body));
       } else {
         return SubtitleStats.empty();
       }

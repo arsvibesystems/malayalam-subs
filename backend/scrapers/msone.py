@@ -239,6 +239,10 @@ class MSoneScraper(BaseScraper):
 
             data["description"] = "\n\n".join(desc_parts)
 
+            # --- Release Number ---
+            release_match = re.search(r'(?:റിലീസ്|Release)\s*[:\-–]\s*(\d+)', soup.get_text(), re.IGNORECASE)
+            data["release_number"] = int(release_match.group(1)) if release_match else None
+
             # --- Slug ---
             data["slug"] = self._make_slug(data["title"], url)
 

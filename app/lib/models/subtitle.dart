@@ -17,6 +17,7 @@ class Subtitle {
   final String description;
   final String createdAt;
   final String updatedAt;
+  final int? releaseNumber;
 
   Subtitle({
     required this.title,
@@ -36,6 +37,7 @@ class Subtitle {
     required this.description,
     required this.createdAt,
     required this.updatedAt,
+    this.releaseNumber,
   });
 
   factory Subtitle.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,7 @@ class Subtitle {
       description: json['description'] ?? '',
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
+      releaseNumber: json['release_number'],
     );
   }
 
@@ -94,11 +97,31 @@ class Subtitle {
   }
 }
 
+class SourceStats {
+  final int total;
+  final int movies;
+  final int series;
+
+  SourceStats({
+    required this.total,
+    required this.movies,
+    required this.series,
+  });
+
+  factory SourceStats.fromJson(Map<String, dynamic> json) {
+    return SourceStats(
+      total: json['total'] ?? 0,
+      movies: json['movies'] ?? 0,
+      series: json['series'] ?? 0,
+    );
+  }
+}
+
 /// Stats/filter metadata from the API
 class SubtitleStats {
   final int totalCount;
   final String lastUpdated;
-  final Map<String, int> perSource;
+  final Map<String, SourceStats> perSource;
   final SubtitleFilters filters;
 
   SubtitleStats({
@@ -109,10 +132,15 @@ class SubtitleStats {
   });
 
   factory SubtitleStats.fromJson(Map<String, dynamic> json) {
-    final perSource = <String, int>{};
+    final perSource = <String, SourceStats>{};
     if (json['per_source'] != null) {
       (json['per_source'] as Map).forEach((k, v) {
-        perSource[k.toString()] = (v as num).toInt();
+        if (v is Map<String, dynamic>) {
+          perSource[k.toString()] = SourceStats.fromJson(v);
+        } else if (v is int) {
+          // Fallback for older stats format
+          perSource[k.toString()] = SourceStats(total: v, movies: v, series: 0);
+        }
       });
     }
     return SubtitleStats(

@@ -162,34 +162,98 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             if (!provider.isLoading && provider.allSubtitles.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    _buildDrawerStatRow(
-                      '${provider.allSubtitles.length}',
-                      'Total Subtitles',
-                      Icons.subtitles_rounded,
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      children: [
+                        _buildDrawerStatRow(
+                          '${provider.allSubtitles.length}',
+                          'Total Subtitles',
+                          Icons.subtitles_rounded,
+                        ),
+                        const SizedBox(height: 24),
+                        _buildDrawerStatRow(
+                          '${provider.allSubtitles.where((s) => s.releaseType == "movie").length}',
+                          'Movies',
+                          Icons.movie_rounded,
+                        ),
+                        const SizedBox(height: 24),
+                        _buildDrawerStatRow(
+                          '${provider.allSubtitles.where((s) => s.releaseType == "series").length}',
+                          'Series',
+                          Icons.tv_rounded,
+                        ),
+                        const SizedBox(height: 24),
+                        _buildDrawerStatRow(
+                          '${provider.stats.perSource.length}',
+                          'Sources',
+                          Icons.language_rounded,
+                        ),
+                        const SizedBox(height: 16),
+                        Theme(
+                          data: Theme.of(context).copyWith(
+                            dividerColor: Colors.transparent,
+                          ),
+                          child: ExpansionTile(
+                            tilePadding: EdgeInsets.zero,
+                            collapsedIconColor: AppTheme.textMuted,
+                            iconColor: AppTheme.accentGold,
+                            title: const Text(
+                              'Sources Breakdown',
+                              style: TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            children: provider.stats.perSource.entries.map((entry) {
+                              final site = entry.key;
+                              final siteStats = entry.value;
+                              String displayName = site;
+                              if (site == 'teamgoat') displayName = 'Team GOAT';
+                              if (site == 'msone') displayName = 'MSone';
+                              if (site == 'moviemirror') displayName = 'Movie Mirror';
+    
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.bgCardLight,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        displayName,
+                                        style: const TextStyle(
+                                          color: AppTheme.accentGold,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          _buildMiniStat('Total', siteStats.total),
+                                          _buildMiniStat('Movies', siteStats.movies),
+                                          _buildMiniStat('Series', siteStats.series),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 24),
-                    _buildDrawerStatRow(
-                      '${provider.allSubtitles.where((s) => s.releaseType == "movie").length}',
-                      'Movies',
-                      Icons.movie_rounded,
-                    ),
-                    const SizedBox(height: 24),
-                    _buildDrawerStatRow(
-                      '${provider.allSubtitles.where((s) => s.releaseType == "series").length}',
-                      'Series',
-                      Icons.tv_rounded,
-                    ),
-                    const SizedBox(height: 24),
-                    _buildDrawerStatRow(
-                      '${provider.stats.perSource.length}',
-                      'Sources',
-                      Icons.language_rounded,
-                    ),
-                  ],
+                  ),
                 ),
               ),
           ],
@@ -227,6 +291,28 @@ class HomeScreen extends StatelessWidget {
                 style: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
               ),
             ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMiniStat(String label, int value) {
+    return Column(
+      children: [
+        Text(
+          value.toString(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppTheme.textMuted,
+            fontSize: 12,
           ),
         ),
       ],

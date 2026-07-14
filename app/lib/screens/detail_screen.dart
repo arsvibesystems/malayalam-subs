@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/subtitle.dart';
@@ -144,27 +145,15 @@ class DetailScreen extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.star_rounded, color: AppTheme.accentGold, size: 24),
+                                const Icon(Icons.star_rounded, color: AppTheme.accentGold, size: 20),
                                 const SizedBox(width: 8),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${subtitle.imdbRating!.toStringAsFixed(1)}/10',
-                                      style: const TextStyle(
-                                        color: AppTheme.textPrimary,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    const Text(
-                                      'IMDb',
-                                      style: TextStyle(
-                                        color: AppTheme.textMuted,
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ],
+                                Text(
+                                  '${subtitle.imdbRating!.toStringAsFixed(1)}/10 IMDb',
+                                  style: const TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ],
                             ),
@@ -255,6 +244,37 @@ class DetailScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                   ],
 
+                  // Release Number
+                  if (subtitle.releaseNumber != null) ...[
+                    Builder(
+                      builder: (ctx) => _buildInfoRow(
+                        Icons.numbers_rounded,
+                        'Release Number',
+                        '${subtitle.releaseNumber}',
+                        trailing: IconButton(
+                          icon: const Icon(Icons.copy_rounded, color: AppTheme.accentTeal, size: 20),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: subtitle.releaseNumber.toString()));
+                            ScaffoldMessenger.of(ctx).showSnackBar(
+                              SnackBar(
+                                content: const Text('Release number copied to clipboard!'),
+                                backgroundColor: AppTheme.accentTeal,
+                                behavior: SnackBarBehavior.floating,
+                                duration: const Duration(seconds: 2),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
                   // Description
                   if (subtitle.description.isNotEmpty &&
                       subtitle.description.length > 10) ...[
@@ -270,9 +290,10 @@ class DetailScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       subtitle.description,
+                      textAlign: TextAlign.justify,
                       style: const TextStyle(
                         color: AppTheme.textSecondary,
-                        fontSize: 14,
+                        fontSize: 15,
                         height: 1.6,
                       ),
                     ),
@@ -334,7 +355,7 @@ class DetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String value, {Widget? trailing}) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -345,27 +366,30 @@ class DetailScreen extends StatelessWidget {
         children: [
           Icon(icon, color: AppTheme.accentTeal, size: 22),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: AppTheme.textMuted,
-                  fontSize: 11,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppTheme.textMuted,
+                    fontSize: 11,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+          if (trailing != null) trailing,
         ],
       ),
     );

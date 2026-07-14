@@ -151,7 +151,11 @@ def build_stats(data: List[Dict]) -> Dict[str, Any]:
         "total_count": len(data),
         "last_updated": datetime.now(timezone.utc).isoformat(),
         "per_source": {
-            source: len([d for d in data if d.get("source_site") == source])
+            source: {
+                "total": len([d for d in data if d.get("source_site") == source]),
+                "movies": len([d for d in data if d.get("source_site") == source and d.get("release_type", "").lower() == "movie"]),
+                "series": len([d for d in data if d.get("source_site") == source and d.get("release_type", "").lower() == "series"]),
+            }
             for source in sources
         },
         "filters": {
@@ -173,7 +177,7 @@ def main():
                         help="Which sites to scrape")
     args = parser.parse_args()
 
-    max_pages = 50 if args.full else args.pages
+    max_pages = 500 if args.full else args.pages
 
     logger.info(f"=== Malayalam Subtitles Scraper ===")
     logger.info(f"Pages: {'ALL' if args.full else max_pages}, Sites: {args.sites}")
