@@ -158,7 +158,14 @@ class MovieMirrorScraper(BaseScraper):
                 cat_text = self._clean_text(cat_link.get_text())
                 if cat_text and len(cat_text) < 30:
                     genres.append(cat_text)
-            data["genres"] = ", ".join(genres) if genres else ""
+            
+            table_genre = self._extract_field(soup, page_text, ["ഴോൺറെ", "genre"], "")
+            if table_genre:
+                genres.extend([g.strip() for g in table_genre.split("/")])
+
+            # Remove duplicates and join
+            genres = list(dict.fromkeys(genres))
+            data["genre"] = ", ".join(genres) if genres else ""
 
             # Translator
             data["translator"] = self._extract_field(soup, page_text,
@@ -205,7 +212,7 @@ class MovieMirrorScraper(BaseScraper):
 
             # --- Description ---
             desc_parts = []
-            content_div = soup.find("div", class_=re.compile(r'entry-content|post-content')) or soup.find("main")
+            content_div = soup.find("div", class_=re.compile(r'ms-content-box|entry-content|post-content')) or soup.find("main")
             if content_div:
                 for p in content_div.find_all("p"):
                     text = self._clean_text(p.get_text())
@@ -224,7 +231,7 @@ class MovieMirrorScraper(BaseScraper):
             data["description"] = "\n\n".join(desc_parts)
 
             # --- Release Number ---
-            release_match = re.search(r'(?:റിലീസ്|Release)\s*[:\-–]\s*(\d+)', soup.get_text(), re.IGNORECASE)
+            release_match = re.search(r'(?:റിലീസ്|Release)\s*[:\-–•]\s*(\d+)', soup.get_text(), re.IGNORECASE)
             data["release_number"] = int(release_match.group(1)) if release_match else None
 
             # --- Slug ---
@@ -243,6 +250,13 @@ class MovieMirrorScraper(BaseScraper):
             for row in table.find_all("tr"):
                 header = row.find("th")
                 cell = row.find("td")
+                
+                # Check for two td's (Movie Mirror format)
+                tds = row.find_all("td")
+                if len(tds) >= 2 and not header:
+                    header = tds[0]
+                    cell = tds[1]
+
                 if header and cell:
                     header_text = self._clean_text(header.get_text()).lower()
                     for kw in keywords:
