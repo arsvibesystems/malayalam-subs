@@ -11,6 +11,7 @@ Usage:
 import json
 import os
 import sys
+import time
 import argparse
 import logging
 from datetime import datetime, timezone, timedelta
@@ -257,6 +258,28 @@ def main():
         try:
             scraper = scrapers[site_key]()
             items = scraper.scrape_all(max_pages=max_pages)
+
+            # Safeguard: 0 items almost certainly means a transient failure
+            # (e.g. Cloudflare challenge, timeout). Retry with backoff.
+            if len(items) == 0:
+                MAX_RETRIES = 2
+                for attempt in range(1, MAX_RETRIES + 1):
+                    logger.warning(
+                        f"  {site_key}: got 0 items — likely blocked/timeout. "
+                        f"Retrying in 30s (attempt {attempt}/{MAX_RETRIES})..."
+                    )
+                    time.sleep(30)
+                    scraper = scrapers[site_key]()  # fresh session
+                    items = scraper.scrape_all(max_pages=max_pages)
+                    if len(items) > 0:
+                        logger.info(f"  {site_key}: retry succeeded with {len(items)} items")
+                        break
+                else:
+                    logger.error(
+                        f"  ⚠ {site_key}: still 0 items after {MAX_RETRIES} retries! "
+                        f"Site may be blocking this IP."
+                    )
+
             all_new_items.extend(items)
             logger.info(f"  {site_key}: scraped {len(items)} items")
         except Exception as e:
