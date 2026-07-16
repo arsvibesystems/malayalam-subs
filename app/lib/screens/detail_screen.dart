@@ -290,7 +290,7 @@ class DetailScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       subtitle.description,
-                      textAlign: TextAlign.justify,
+                      textAlign: TextAlign.left,
                       style: const TextStyle(
                         color: AppTheme.textSecondary,
                         fontSize: 15,
