@@ -40,8 +40,12 @@ class BaseScraper:
     }
 
     def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update(self.HEADERS)
+        try:
+            import cloudscraper
+            self.session = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'android', 'desktop': False})
+        except ImportError:
+            self.session = requests.Session()
+            self.session.headers.update(self.HEADERS)
         self.logger = logging.getLogger(self.SITE_KEY or self.__class__.__name__)
 
     def _rate_limit(self):

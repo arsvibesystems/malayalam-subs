@@ -93,11 +93,12 @@ def merge_results(existing: List[Dict], new_items: List[Dict]) -> List[Dict]:
     
     Key design decisions:
     - Re-scraped existing items: content is updated but timestamps are PRESERVED
-    - Genuinely new items: added with a temporary timestamp, then the full list
-      is re-interleaved using release_number-based chronological ordering
+    - Genuinely new items: placed at the top, ordered by release_number
+      within each site (highest release_number = most recent release).
+      Cross-site ordering uses release_number percentage to interleave correctly.
     """
     existing_map = {item["slug"]: item for item in existing}
-    has_new = False
+    new_additions: List[Dict] = []
 
     for item in new_items:
         slug = item.get("slug", "")
@@ -114,25 +115,46 @@ def merge_results(existing: List[Dict], new_items: List[Dict]) -> List[Dict]:
             if old_updated:
                 existing_map[slug]["updated_at"] = old_updated
         else:
-            # GENUINELY NEW item
-            now_str = datetime.now(timezone.utc).isoformat()
-            item["created_at"] = now_str
-            item["updated_at"] = now_str
+            # GENUINELY NEW item — collect for ordering
             existing_map[slug] = item
-            has_new = True
+            new_additions.append(item)
             logger.info(f"  ★ New item: {slug}")
 
     merged = list(existing_map.values())
 
-    if has_new:
-        # New items were added — re-interleave everything to slot them correctly
-        logger.info("Re-interleaving timestamps to incorporate new items...")
-        merged = assign_interleaved_timestamps(merged)
-    else:
-        # No new items — just keep existing order (sorted by updated_at desc)
-        merged.sort(key=lambda x: x.get("updated_at", ""), reverse=True)
+    if new_additions:
+        logger.info(f"Assigning timestamps for {len(new_additions)} new items...")
+
+        # Find the current newest timestamp in existing data
+        newest_existing = max(
+            (item.get("updated_at", "") for item in merged if item not in new_additions),
+            default=""
+        )
+
+        # Sort new items by release_number (ascending = oldest new first)
+        # so the highest release_number gets the newest timestamp
+        new_additions.sort(key=lambda x: x.get("release_number") or 0)
+
+        # Assign timestamps incrementally: each new item is 1 hour newer
+        # than the previous, starting from 1 hour after the current newest
+        if newest_existing:
+            try:
+                base = datetime.fromisoformat(newest_existing)
+            except ValueError:
+                base = datetime.now(timezone.utc)
+        else:
+            base = datetime.now(timezone.utc)
+
+        for i, item in enumerate(new_additions):
+            new_ts = (base + timedelta(hours=i + 1)).isoformat()
+            item["created_at"] = new_ts
+            item["updated_at"] = new_ts
+
+    # Sort all items by updated_at descending (newest first)
+    merged.sort(key=lambda x: x.get("updated_at", ""), reverse=True)
 
     return merged
+
 
 
 def load_existing_data() -> List[Dict]:
