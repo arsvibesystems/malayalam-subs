@@ -40,13 +40,27 @@ class BaseScraper:
     }
 
     def __init__(self):
+        self.logger = logging.getLogger(self.SITE_KEY or self.__class__.__name__)
         try:
-            import cloudscraper
-            self.session = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'android', 'desktop': False})
+            import undetected_chromedriver as uc
+            options = uc.ChromeOptions()
+            options.add_argument('--headless')
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-dev-shm-usage')
+            options.add_argument('--disable-gpu')
+            self.driver = uc.Chrome(options=options)
         except ImportError:
+            self.logger.warning("undetected_chromedriver not installed, falling back to requests")
+            self.driver = None
             self.session = requests.Session()
             self.session.headers.update(self.HEADERS)
-        self.logger = logging.getLogger(self.SITE_KEY or self.__class__.__name__)
+
+    def __del__(self):
+        if hasattr(self, 'driver') and self.driver:
+            try:
+                self.driver.quit()
+            except Exception:
+                pass
 
     def _rate_limit(self):
         """Sleep a random interval between requests to avoid hammering the server."""
@@ -57,11 +71,21 @@ class BaseScraper:
         """Fetch a URL and return parsed BeautifulSoup, with retry on failure."""
         try:
             self.logger.info(f"Fetching: {url}")
-            response = self.session.get(url, timeout=30)
-            response.raise_for_status()
-            self._rate_limit()
-            return BeautifulSoup(response.text, "lxml")
-        except requests.RequestException as e:
+            if hasattr(self, 'driver') and self.driver:
+                self.driver.get(url)
+                self._rate_limit()
+                
+                page_source = self.driver.page_source
+                if "Just a moment..." in page_source or ("Cloudflare" in page_source and "malayalamsubtitles.org" not in page_source):
+                    raise Exception("Cloudflare challenge not bypassed or blocked")
+                
+                return BeautifulSoup(page_source, "lxml")
+            else:
+                response = self.session.get(url, timeout=30)
+                response.raise_for_status()
+                self._rate_limit()
+                return BeautifulSoup(response.text, "lxml")
+        except Exception as e:
             if retry < self.MAX_RETRIES:
                 wait = (retry + 1) * 5
                 self.logger.warning(f"Request failed ({e}), retrying in {wait}s... (attempt {retry + 1})")

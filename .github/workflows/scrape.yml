@@ -35,6 +35,13 @@ jobs:
           cache: 'pip'
           cache-dependency-path: 'backend/requirements.txt'
 
+      - name: Install Google Chrome and Xvfb
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable xvfb
+
       - name: Install dependencies
         run: pip install -r backend/requirements.txt
 
@@ -42,9 +49,9 @@ jobs:
         run: |
           cd backend
           if [ "${{ github.event.inputs.full_scrape }}" = "true" ]; then
-            python run_scraper.py --full
+            xvfb-run --auto-servernum python run_scraper.py --full
           else
-            python run_scraper.py --pages ${{ github.event.inputs.pages || '3' }}
+            xvfb-run --auto-servernum python run_scraper.py --pages ${{ github.event.inputs.pages || '3' }}
           fi
 
       - name: Commit and push data
