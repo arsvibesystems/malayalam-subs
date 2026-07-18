@@ -163,33 +163,64 @@ class DetailScreen extends StatelessWidget {
                       const Spacer(),
 
                       // Source site badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: AppTheme.getSourceColor(subtitle.sourceSite).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: AppTheme.getSourceColor(subtitle.sourceSite).withValues(alpha: 0.3),
+                      GestureDetector(
+                        onTap: () {
+                          String botUrl = '';
+                          if (subtitle.sourceSite == 'msone') {
+                            botUrl = 'https://t.me/msoneccbot';
+                          } else if (subtitle.sourceSite == 'moviemirror') {
+                            botUrl = 'https://t.me/MMSubtitleBot';
+                          } else if (subtitle.sourceSite == 'teamgoat') {
+                            botUrl = 'https://t.me/Team_Goat_Bot';
+                          }
+
+                          if (botUrl.isNotEmpty) {
+                            if (subtitle.releaseNumber != null) {
+                              final textToCopy = '/${subtitle.releaseNumber}';
+                              Clipboard.setData(ClipboardData(text: textToCopy));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Copied $textToCopy to clipboard!'),
+                                  backgroundColor: AppTheme.accentTeal,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: const Duration(seconds: 2),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              );
+                            }
+                            _launchUrl(botUrl);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: AppTheme.getSourceColor(subtitle.sourceSite).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppTheme.getSourceColor(subtitle.sourceSite).withValues(alpha: 0.3),
+                            ),
                           ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.public_rounded,
-                              color: AppTheme.getSourceColor(subtitle.sourceSite),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              AppTheme.getSourceLabel(subtitle.sourceSite),
-                              style: TextStyle(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.public_rounded,
                                 color: AppTheme.getSourceColor(subtitle.sourceSite),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                size: 20,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 8),
+                              Text(
+                                AppTheme.getSourceLabel(subtitle.sourceSite),
+                                style: TextStyle(
+                                  color: AppTheme.getSourceColor(subtitle.sourceSite),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -256,7 +287,7 @@ class DetailScreen extends StatelessWidget {
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                           onPressed: () {
-                            Clipboard.setData(ClipboardData(text: subtitle.releaseNumber.toString()));
+                            Clipboard.setData(ClipboardData(text: '/${subtitle.releaseNumber}'));
                             ScaffoldMessenger.of(ctx).showSnackBar(
                               SnackBar(
                                 content: const Text('Release number copied to clipboard!'),
@@ -438,19 +469,42 @@ class DetailScreen extends StatelessWidget {
     );
   }
 
-  void _handleDownload(BuildContext context) {
+  void _handleDownload(BuildContext context) async {
     final url = subtitle.downloadUrl.isNotEmpty ? subtitle.downloadUrl : subtitle.sourceUrl;
-    // Redirect to the website page for download
-    // (respects Cloudflare protection and lets user download from the source)
-    _launchUrl(url);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Opening download page in browser...'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: AppTheme.bgCard,
-      ),
-    );
+    final uri = Uri.parse(url);
+
+    if (subtitle.sourceSite == 'teamgoat' || subtitle.sourceSite == 'moviemirror') {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+        // Wait for download to initiate, then close the browser automatically
+        Future.delayed(const Duration(seconds: 3), () {
+          closeInAppWebView();
+        });
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Downloading subtitle...'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            backgroundColor: AppTheme.bgCard,
+          ),
+        );
+      }
+    } else {
+      // Redirect to the website page for download (e.g., msone)
+      _launchUrl(url);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Opening download page in browser...'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            backgroundColor: AppTheme.bgCard,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _launchUrl(String url) async {
