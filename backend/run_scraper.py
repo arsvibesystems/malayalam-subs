@@ -126,24 +126,10 @@ def merge_results(existing: List[Dict], new_items: List[Dict]) -> List[Dict]:
         logger.info(f"Assigning timestamps for {len(new_additions)} new items...")
 
         # Find the current newest timestamp in existing data
-        newest_existing = max(
-            (item.get("updated_at", "") for item in merged if item not in new_additions),
-            default=""
-        )
-
-        # Sort new items by release_number (ascending = oldest new first)
-        # so the highest release_number gets the newest timestamp
+        # Historical items have 2020 timestamps, so we should NOT use newest_existing.
+        # Instead, use current time for genuinely new scraped items.
         new_additions.sort(key=lambda x: x.get("release_number") or 0)
-
-        # Assign timestamps incrementally: each new item is 1 hour newer
-        # than the previous, starting from 1 hour after the current newest
-        if newest_existing:
-            try:
-                base = datetime.fromisoformat(newest_existing)
-            except ValueError:
-                base = datetime.now(timezone.utc)
-        else:
-            base = datetime.now(timezone.utc)
+        base = datetime.now(timezone.utc)
 
         for i, item in enumerate(new_additions):
             new_ts = (base + timedelta(hours=i + 1)).isoformat()
