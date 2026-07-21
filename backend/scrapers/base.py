@@ -40,10 +40,15 @@ class BaseScraper:
         self.driver = None
         
         # Persist session with Chrome TLS impersonation
+        self._init_session()
+
+    def _init_session(self):
+        """Initialize or reset the curl_cffi session."""
         self.session = requests.Session(impersonate="chrome120")
         self.session.headers.update(self.HEADERS)
         if self.BASE_URL:
             self.session.headers["Referer"] = f"{self.BASE_URL.rstrip('/')}/"
+
 
     def _rate_limit(self):
         """Sleep a random interval with jitter between requests."""
@@ -71,12 +76,13 @@ class BaseScraper:
                 raise Exception(f"Cloudflare challenge or block detected (Status: {response.status_code})")
                 
             response.raise_for_status()
+            if "feed" in url or "rss" in url:
+                return BeautifulSoup(response.text, "xml")
             return BeautifulSoup(response.text, "lxml")
         except Exception as e:
             # Reset session to close flagged TCP/HTTP2 socket
             try:
-                self.session = requests.Session(impersonate="chrome120")
-                self.session.headers.update(self.HEADERS)
+                self._init_session()
             except Exception:
                 pass
 
