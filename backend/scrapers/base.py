@@ -73,11 +73,18 @@ class BaseScraper:
             response.raise_for_status()
             return BeautifulSoup(response.text, "lxml")
         except Exception as e:
+            # Reset session to close flagged TCP/HTTP2 socket
+            try:
+                self.session = requests.Session(impersonate="chrome120")
+                self.session.headers.update(self.HEADERS)
+            except Exception:
+                pass
+
             if retry < self.MAX_RETRIES:
-                wait = (retry + 1) * 5
-                self.logger.warning(f"Request failed ({e}), retrying in {wait}s... (attempt {retry + 1})")
+                wait = (retry + 1) * 15
+                self.logger.warning(f"Request failed ({e}), retrying in {wait}s with fresh TCP session... (attempt {retry + 1})")
                 time.sleep(wait)
-                return self._fetch_page(url, retry + 1)
+                return self._fetch_page(url, referer=referer, retry=retry + 1)
             else:
                 self.logger.error(f"Failed to fetch {url} after {self.MAX_RETRIES} retries: {e}")
                 return None
