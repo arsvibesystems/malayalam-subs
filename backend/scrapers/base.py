@@ -37,12 +37,7 @@ class BaseScraper:
 
     def __init__(self):
         self.logger = logging.getLogger(self.SITE_KEY or self.__class__.__name__)
-
-        # Use curl_cffi with Chrome impersonation to perfectly bypass Cloudflare
-        # without needing a headless browser or proxy.
         self.driver = None
-        self.session = requests.Session(impersonate="chrome")
-        self.session.headers.update(self.HEADERS)
 
     def _rate_limit(self):
         """Sleep a random interval between requests to avoid hammering the server."""
@@ -53,7 +48,7 @@ class BaseScraper:
         """Fetch a URL and return parsed BeautifulSoup, with retry on failure."""
         try:
             self.logger.info(f"Fetching: {url}")
-            response = self.session.get(url, timeout=30)
+            response = requests.get(url, impersonate="chrome", headers=self.HEADERS, timeout=30)
             
             # Raise exception if we still hit a block
             if response.status_code in [403, 429] or "Just a moment..." in response.text[:500]:
