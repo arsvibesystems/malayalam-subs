@@ -25,32 +25,55 @@ class BaseScraper:
     SITE_KEY: str = ""
     BASE_URL: str = ""
 
-    # Rate limiting: wait 2-4 seconds between requests to be respectful
-    MIN_DELAY: float = 2.0
-    MAX_DELAY: float = 4.0
+    # Rate limiting: wait 3-5 seconds with jitter between requests
+    MIN_DELAY: float = 3.0
+    MAX_DELAY: float = 5.0
     MAX_RETRIES: int = 3
 
     HEADERS = {
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/126.0.0.0 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9,ml;q=0.8",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1",
     }
 
     def __init__(self):
         self.logger = logging.getLogger(self.SITE_KEY or self.__class__.__name__)
         self.driver = None
+        
+        # Persist session with Chrome TLS impersonation
+        self.session = requests.Session(impersonate="chrome120")
+        self.session.headers.update(self.HEADERS)
+        if self.BASE_URL:
+            self.session.headers["Referer"] = f"{self.BASE_URL.rstrip('/')}/"
 
     def _rate_limit(self):
-        """Sleep a random interval between requests to avoid hammering the server."""
+        """Sleep a random interval with jitter between requests."""
         delay = random.uniform(self.MIN_DELAY, self.MAX_DELAY)
         time.sleep(delay)
 
-    def _fetch_page(self, url: str, retry: int = 0) -> Optional[BeautifulSoup]:
-        """Fetch a URL and return parsed BeautifulSoup, with retry on failure."""
+    def _fetch_page(self, url: str, referer: Optional[str] = None, retry: int = 0) -> Optional[BeautifulSoup]:
+        """Fetch a URL using persistent session and Referer header, with retry logic."""
         try:
             self.logger.info(f"Fetching: {url}")
-            response = requests.get(url, impersonate="chrome", headers=self.HEADERS, timeout=30)
             
-            # Raise exception if we still hit a block
+            headers = {}
+            if referer:
+                headers["Referer"] = referer
+            elif self.BASE_URL and url != f"{self.BASE_URL.rstrip('/')}/":
+                headers["Referer"] = f"{self.BASE_URL.rstrip('/')}/releases/"
+
+            response = self.session.get(url, headers=headers, timeout=30)
+            
+            # Raise exception if we hit Cloudflare challenge or rate limit
             if response.status_code in [403, 429] or "Just a moment..." in response.text[:500]:
                 raise Exception(f"Cloudflare challenge or block detected (Status: {response.status_code})")
                 
