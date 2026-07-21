@@ -74,6 +74,10 @@ class MSoneScraper(BaseScraper):
         "ഫാമിലി": "Family",
     }
 
+    def __init__(self):
+        super().__init__()
+        self.rss_data: Dict[str, Dict[str, Any]] = {}
+
     def scrape_listing_page(self, page_num: int) -> List[str]:
         """Scrape the releases listing page or RSS feed for detail page URLs."""
         detail_urls = []
@@ -84,10 +88,41 @@ class MSoneScraper(BaseScraper):
             if soup:
                 for item in soup.find_all("item"):
                     link = item.find("link")
+                    title_elem = item.find("title")
                     if link and link.text:
                         href = link.text.strip()
                         if href.startswith(self.BASE_URL):
                             detail_urls.append(href)
+                            
+                            # Build RSS fallback item in case detail page fetch gets 403
+                            title_text = self._clean_text(title_elem.text) if title_elem else "Unknown"
+                            title_text = re.sub(r'\s*[-–]\s*എംസോൺ\s*$', '', title_text)
+                            cats = [c.text.strip() for c in item.find_all("category")]
+                            
+                            desc_elem = item.find("description") or item.find("encoded")
+                            desc_text = ""
+                            if desc_elem and desc_elem.text:
+                                desc_soup = BeautifulSoup(desc_elem.text, "html.parser")
+                                desc_text = self._clean_text(desc_soup.get_text())
+
+                            self.rss_data[href] = {
+                                "source_site": self.SITE_KEY,
+                                "source_url": href,
+                                "title": title_text,
+                                "year": self._extract_year(title_text),
+                                "thumbnail_url": "",
+                                "movie_language": cats[0] if cats else self._detect_language_from_url(href),
+                                "genres": "",
+                                "imdb_rating": None,
+                                "imdb_url": "",
+                                "translator": cats[1] if len(cats) > 1 else "",
+                                "release_type": "movie",
+                                "certificate": "",
+                                "download_url": href,
+                                "description": desc_text[:500] if desc_text else "",
+                                "release_number": None,
+                                "slug": self._make_slug(title_text, href),
+                            }
             if detail_urls:
                 self.logger.info(f"  Found {len(detail_urls)} detail URLs on page 1 via RSS feed")
                 return detail_urls
@@ -120,6 +155,9 @@ class MSoneScraper(BaseScraper):
         """Scrape a single subtitle detail page for all metadata."""
         soup = self._fetch_page(url)
         if not soup:
+            if url in self.rss_data:
+                self.logger.info(f"  ✓ Using RSS fallback data for: {url}")
+                return self.rss_data[url]
             return None
 
         try:

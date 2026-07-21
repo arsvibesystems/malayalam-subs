@@ -53,6 +53,9 @@ class BaseScraper:
     def _fetch_page(self, url: str, referer: Optional[str] = None, retry: int = 0) -> Optional[BeautifulSoup]:
         """Fetch a URL using persistent session and Referer header, with retry logic."""
         try:
+            # Enforce delay jitter BEFORE the HTTP request runs (prevents 0ms bursts)
+            self._rate_limit()
+
             self.logger.info(f"Fetching: {url}")
             
             headers = {}
@@ -68,7 +71,6 @@ class BaseScraper:
                 raise Exception(f"Cloudflare challenge or block detected (Status: {response.status_code})")
                 
             response.raise_for_status()
-            self._rate_limit()
             return BeautifulSoup(response.text, "lxml")
         except Exception as e:
             if retry < self.MAX_RETRIES:
