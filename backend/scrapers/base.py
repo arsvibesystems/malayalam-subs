@@ -69,7 +69,16 @@ class BaseScraper:
             elif self.BASE_URL and url != f"{self.BASE_URL.rstrip('/')}/":
                 headers["Referer"] = f"{self.BASE_URL.rstrip('/')}/releases/"
 
-            response = self.session.get(url, headers=headers, timeout=30)
+            fetch_url = url
+            proxy_url = os.getenv("MSONE_PROXY_URL")
+            # Only use proxy for malayalamsubtitles.org requests
+            if proxy_url and "malayalamsubtitles.org" in url:
+                fetch_url = f"{proxy_url.rstrip('/')}/?url={quote(url)}"
+                auth_token = os.getenv("MSONE_PROXY_AUTH_TOKEN")
+                if auth_token:
+                    headers["X-Auth-Token"] = auth_token
+
+            response = self.session.get(fetch_url, headers=headers, timeout=30)
             
             # Raise exception if we hit Cloudflare challenge or rate limit
             if response.status_code in [403, 429] or "Just a moment..." in response.text[:500]:
