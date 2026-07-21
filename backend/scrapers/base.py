@@ -58,33 +58,13 @@ class BaseScraper:
         if env_auth:
             self.PROXY_AUTH_TOKEN = env_auth
 
-        # If proxy is configured, use simple requests (no Chrome needed)
         if self.PROXY_URL:
             self.logger.info(f"Using proxy: {self.PROXY_URL}")
-            self.driver = None
-            self.session = requests.Session()
-            self.session.headers.update(self.HEADERS)
-        else:
-            try:
-                import undetected_chromedriver as uc
-                options = uc.ChromeOptions()
-                options.add_argument('--headless')
-                options.add_argument('--no-sandbox')
-                options.add_argument('--disable-dev-shm-usage')
-                options.add_argument('--disable-gpu')
-                self.driver = uc.Chrome(options=options)
-            except ImportError:
-                self.logger.warning("undetected_chromedriver not installed, falling back to requests")
-                self.driver = None
-                self.session = requests.Session()
-                self.session.headers.update(self.HEADERS)
 
-    def __del__(self):
-        if hasattr(self, 'driver') and self.driver:
-            try:
-                self.driver.quit()
-            except Exception:
-                pass
+        # Use simple requests (no Chrome needed for any site now)
+        self.driver = None
+        self.session = requests.Session()
+        self.session.headers.update(self.HEADERS)
 
     def _rate_limit(self):
         """Sleep a random interval between requests to avoid hammering the server."""
@@ -103,7 +83,7 @@ class BaseScraper:
         try:
             self.logger.info(f"Fetching: {url}")
             if self.PROXY_URL:
-                # Route through proxy — simple HTTP request, no Chrome needed
+                # Route through proxy — simple HTTP request
                 fetch_url = self._build_fetch_url(url)
                 headers = dict(self.HEADERS)
                 if self.PROXY_AUTH_TOKEN:
@@ -117,15 +97,6 @@ class BaseScraper:
                     raise Exception("Cloudflare challenge detected even through proxy")
 
                 return BeautifulSoup(response.text, "lxml")
-            elif hasattr(self, 'driver') and self.driver:
-                self.driver.get(url)
-                self._rate_limit()
-                
-                page_source = self.driver.page_source
-                if "Just a moment..." in page_source or ("Cloudflare" in page_source and "malayalamsubtitles.org" not in page_source):
-                    raise Exception("Cloudflare challenge not bypassed or blocked")
-                
-                return BeautifulSoup(page_source, "lxml")
             else:
                 response = self.session.get(url, timeout=30)
                 response.raise_for_status()
