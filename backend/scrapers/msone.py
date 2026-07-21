@@ -75,22 +75,33 @@ class MSoneScraper(BaseScraper):
     }
 
     def scrape_listing_page(self, page_num: int) -> List[str]:
-        """Scrape the releases listing page for detail page URLs."""
+        """Scrape the releases listing page or RSS feed for detail page URLs."""
+        detail_urls = []
         if page_num == 1:
-            url = f"{self.BASE_URL}/releases/"
-        else:
-            url = f"{self.BASE_URL}/releases/page/{page_num}/"
+            # Use RSS feed for page 1 — bypasses Cloudflare challenge on GitHub Actions IPs
+            feed_url = f"{self.BASE_URL}/feed/"
+            soup = self._fetch_page(feed_url)
+            if soup:
+                for item in soup.find_all("item"):
+                    link = item.find("link")
+                    if link and link.text:
+                        href = link.text.strip()
+                        if href.startswith(self.BASE_URL):
+                            detail_urls.append(href)
+            if detail_urls:
+                self.logger.info(f"  Found {len(detail_urls)} detail URLs on page 1 via RSS feed")
+                return detail_urls
 
+        # Fallback / Subsequent pages
+        url = f"{self.BASE_URL}/releases/" if page_num == 1 else f"{self.BASE_URL}/releases/page/{page_num}/"
         soup = self._fetch_page(url)
         if not soup:
             return []
 
-        detail_urls = []
         # MSone uses links that contain /languages/ in the path for detail pages
         for link in soup.find_all("a", href=True):
             href = link["href"]
             if "/languages/" in href and href.startswith(self.BASE_URL):
-                # Avoid duplicates and non-detail pages
                 if href not in detail_urls and re.search(r'/languages/[^/]+/[^/]+/$', href):
                     detail_urls.append(href)
 
