@@ -60,19 +60,31 @@ export default {
       );
     }
 
-    // --- Proxy the request with browser-like headers ---
+    // --- Proxy the request with forwarded headers ---
     try {
+      // Build headers to send to destination
+      const proxyHeaders = new Headers();
+      
+      // Copy incoming headers (this passes Cookies, User-Agent, etc.)
+      for (const [key, value] of request.headers.entries()) {
+        const lowerKey = key.toLowerCase();
+        // Skip headers that should not be forwarded
+        if (!['host', 'cf-connecting-ip', 'cf-ipcountry', 'cf-ray', 'cf-visitor', 'x-forwarded-proto', 'x-real-ip'].includes(lowerKey) && !lowerKey.startsWith('x-auth')) {
+          proxyHeaders.set(key, value);
+        }
+      }
+      
+      // Ensure browser-like headers exist if not provided by scraper
+      if (!proxyHeaders.has('user-agent')) {
+        proxyHeaders.set('User-Agent', 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36');
+      }
+      if (!proxyHeaders.has('accept')) {
+        proxyHeaders.set('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8');
+      }
+
       const proxyResponse = await fetch(targetUrl, {
         method: 'GET',
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
-          'Accept':
-            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9,ml;q=0.8',
-          'Accept-Encoding': 'gzip',
-          'Cache-Control': 'no-cache',
-        },
+        headers: proxyHeaders,
         // Cloudflare Workers follow redirects by default
         redirect: 'follow',
       });
