@@ -46,6 +46,9 @@ jobs:
         run: pip install -r backend/requirements.txt
 
       - name: Run scraper
+        env:
+          MSONE_PROXY_URL: ${{ secrets.MSONE_PROXY_URL }}
+          MSONE_PROXY_AUTH_TOKEN: ${{ secrets.MSONE_PROXY_AUTH_TOKEN }}
         run: |
           cd backend
           if [ "${{ github.event.inputs.full_scrape }}" = "true" ]; then

@@ -3,10 +3,12 @@ Base scraper class with rate-limiting, retry logic, and common utilities.
 All site-specific scrapers inherit from this.
 """
 
+import os
 import time
 import random
 import logging
 import requests
+from urllib.parse import quote
 from bs4 import BeautifulSoup
 from typing import Optional, Dict, Any, List
 
@@ -23,6 +25,12 @@ class BaseScraper:
     SITE_NAME: str = ""
     SITE_KEY: str = ""
     BASE_URL: str = ""
+
+    # Proxy URL for Cloudflare-protected sites (set via env var or override in subclass)
+    # When set, requests are routed through this proxy instead of direct access.
+    # Format: "https://your-worker.workers.dev" (the proxy adds ?url=<target>)
+    PROXY_URL: str = ""
+    PROXY_AUTH_TOKEN: str = ""
 
     # Rate limiting: wait 2-4 seconds between requests to be respectful
     MIN_DELAY: float = 2.0
@@ -41,19 +49,35 @@ class BaseScraper:
 
     def __init__(self):
         self.logger = logging.getLogger(self.SITE_KEY or self.__class__.__name__)
-        try:
-            import undetected_chromedriver as uc
-            options = uc.ChromeOptions()
-            options.add_argument('--headless')
-            options.add_argument('--no-sandbox')
-            options.add_argument('--disable-dev-shm-usage')
-            options.add_argument('--disable-gpu')
-            self.driver = uc.Chrome(options=options)
-        except ImportError:
-            self.logger.warning("undetected_chromedriver not installed, falling back to requests")
+
+        # Check for proxy URL from environment (overrides class attribute)
+        env_proxy = os.environ.get(f"{self.SITE_KEY.upper()}_PROXY_URL", "")
+        if env_proxy:
+            self.PROXY_URL = env_proxy
+        env_auth = os.environ.get(f"{self.SITE_KEY.upper()}_PROXY_AUTH_TOKEN", "")
+        if env_auth:
+            self.PROXY_AUTH_TOKEN = env_auth
+
+        # If proxy is configured, use simple requests (no Chrome needed)
+        if self.PROXY_URL:
+            self.logger.info(f"Using proxy: {self.PROXY_URL}")
             self.driver = None
             self.session = requests.Session()
             self.session.headers.update(self.HEADERS)
+        else:
+            try:
+                import undetected_chromedriver as uc
+                options = uc.ChromeOptions()
+                options.add_argument('--headless')
+                options.add_argument('--no-sandbox')
+                options.add_argument('--disable-dev-shm-usage')
+                options.add_argument('--disable-gpu')
+                self.driver = uc.Chrome(options=options)
+            except ImportError:
+                self.logger.warning("undetected_chromedriver not installed, falling back to requests")
+                self.driver = None
+                self.session = requests.Session()
+                self.session.headers.update(self.HEADERS)
 
     def __del__(self):
         if hasattr(self, 'driver') and self.driver:
@@ -67,11 +91,33 @@ class BaseScraper:
         delay = random.uniform(self.MIN_DELAY, self.MAX_DELAY)
         time.sleep(delay)
 
+    def _build_fetch_url(self, url: str) -> str:
+        """If a proxy is configured, rewrite the URL to go through the proxy."""
+        if self.PROXY_URL:
+            proxy_url = f"{self.PROXY_URL.rstrip('/')}/?url={quote(url, safe='')}"
+            return proxy_url
+        return url
+
     def _fetch_page(self, url: str, retry: int = 0) -> Optional[BeautifulSoup]:
         """Fetch a URL and return parsed BeautifulSoup, with retry on failure."""
         try:
             self.logger.info(f"Fetching: {url}")
-            if hasattr(self, 'driver') and self.driver:
+            if self.PROXY_URL:
+                # Route through proxy — simple HTTP request, no Chrome needed
+                fetch_url = self._build_fetch_url(url)
+                headers = dict(self.HEADERS)
+                if self.PROXY_AUTH_TOKEN:
+                    headers["X-Auth-Token"] = self.PROXY_AUTH_TOKEN
+                response = self.session.get(fetch_url, timeout=60, headers=headers)
+                response.raise_for_status()
+                self._rate_limit()
+
+                # Check for Cloudflare challenge in response
+                if response.status_code == 403 or "Just a moment..." in response.text[:500]:
+                    raise Exception("Cloudflare challenge detected even through proxy")
+
+                return BeautifulSoup(response.text, "lxml")
+            elif hasattr(self, 'driver') and self.driver:
                 self.driver.get(url)
                 self._rate_limit()
                 

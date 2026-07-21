@@ -1,0 +1,10 @@
+name = "msone-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Optional: Set AUTH_TOKEN as a secret for access control
+# Run: npx wrangler secret put AUTH_TOKEN
+# Then set the same token in GitHub Actions secrets as MSONE_PROXY_AUTH_TOKEN
+
+# Free tier: 100,000 requests/day — more than enough for scraping
+# The scraper makes ~50-100 requests per run (listing + detail pages)
