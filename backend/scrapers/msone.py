@@ -10,6 +10,7 @@ Site structure (from research):
 
 import re
 from typing import Optional, Dict, Any, List
+from bs4 import BeautifulSoup
 from .base import BaseScraper
 
 
