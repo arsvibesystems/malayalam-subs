@@ -1,21 +1,21 @@
 {
-  "total_count": 4901,
-  "last_updated": "2026-07-22T13:20:11.659163+00:00",
+  "total_count": 4903,
+  "last_updated": "2026-07-22T18:03:22.018080+00:00",
   "per_source": {
-    "teamgoat": {
-      "total": 489,
-      "movies": 443,
-      "series": 46
-    },
-    "msone": {
-      "total": 3621,
-      "movies": 3251,
-      "series": 370
-    },
     "moviemirror": {
       "total": 791,
       "movies": 754,
       "series": 37
+    },
+    "msone": {
+      "total": 3623,
+      "movies": 3256,
+      "series": 367
+    },
+    "teamgoat": {
+      "total": 489,
+      "movies": 443,
+      "series": 46
     }
   },
   "filters": {
@@ -49,6 +49,7 @@
       "Tamil",
       "Thai",
       "Unknown",
+      "Vietnamese",
       "അംഹാറിക്",
       "അകാൻ",
       "അരാമിക്",
@@ -242,9 +243,17 @@
       "ഹൊറർ"
     ],
     "translators": [
+      "Aashkar Hyder",
+      "Aravind Kumar",
+      "Arun BS",
+      "Asif Asi",
+      "Boyet V Essave",
       "DEEKEY",
       "Linguistic team international - Malayalam team",
+      "Sarang T K",
+      "Subeesh Chittariparamb",
       "TEAM GOAT",
+      "Vishnu Prasad",
       "അക്ഷയ് ആനന്ദ്",
       "അക്ഷയ് ഗോകുലം",
       "അക്ഷയ്. ടി",
