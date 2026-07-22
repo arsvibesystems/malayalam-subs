@@ -55,8 +55,10 @@ class BaseScraper:
         delay = random.uniform(self.MIN_DELAY, self.MAX_DELAY)
         time.sleep(delay)
 
-    def _fetch_page(self, url: str, referer: Optional[str] = None, retry: int = 0) -> Optional[BeautifulSoup]:
+    def _fetch_page(self, url: str, referer: Optional[str] = None, retry: int = 0, max_retries: Optional[int] = None) -> Optional[BeautifulSoup]:
         """Fetch a URL using persistent session and Referer header, with retry logic."""
+        if max_retries is None:
+            max_retries = self.MAX_RETRIES
         try:
             # Enforce delay jitter BEFORE the HTTP request runs (prevents 0ms bursts)
             self._rate_limit()
@@ -95,13 +97,13 @@ class BaseScraper:
             except Exception:
                 pass
 
-            if retry < self.MAX_RETRIES:
+            if retry < max_retries:
                 wait = (retry + 1) * 15
                 self.logger.warning(f"Request failed ({e}), retrying in {wait}s with fresh TCP session... (attempt {retry + 1})")
                 time.sleep(wait)
-                return self._fetch_page(url, referer=referer, retry=retry + 1)
+                return self._fetch_page(url, referer=referer, retry=retry + 1, max_retries=max_retries)
             else:
-                self.logger.error(f"Failed to fetch {url} after {self.MAX_RETRIES} retries: {e}")
+                self.logger.error(f"Failed to fetch {url} after {max_retries} retries: {e}")
                 return None
 
     def _clean_text(self, text: Optional[str]) -> str:

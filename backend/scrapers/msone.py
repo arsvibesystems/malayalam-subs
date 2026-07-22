@@ -154,9 +154,11 @@ class MSoneScraper(BaseScraper):
 
     def scrape_detail_page(self, url: str) -> Optional[Dict[str, Any]]:
         """Scrape a single subtitle detail page for all metadata."""
-        soup = self._fetch_page(url)
+        # Fast-fail if we have fallback data (no retries) to save time when blocked
+        has_fallback = url in self.rss_data
+        soup = self._fetch_page(url, max_retries=0 if has_fallback else None)
         if not soup:
-            if url in self.rss_data:
+            if has_fallback:
                 self.logger.info(f"  ✓ Using RSS fallback data for: {url}")
                 return self.rss_data[url]
             return None
