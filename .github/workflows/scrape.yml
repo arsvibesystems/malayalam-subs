@@ -15,7 +15,7 @@ on:
       pages:
         description: 'Number of pages to scrape'
         required: false
-        default: '3'
+        default: '1'
         type: string
 
 jobs:
@@ -47,7 +47,7 @@ jobs:
           if [ "${{ github.event.inputs.full_scrape }}" = "true" ]; then
             python run_scraper.py --full
           else
-            python run_scraper.py --pages ${{ github.event.inputs.pages || '3' }}
+            python run_scraper.py --pages ${{ github.event.inputs.pages || '1' }}
           fi
 
       - name: Commit and push data

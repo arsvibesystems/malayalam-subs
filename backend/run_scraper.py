@@ -237,7 +237,7 @@ def build_stats(data: List[Dict]) -> Dict[str, Any]:
 def main():
     parser = argparse.ArgumentParser(description="Malayalam Subtitles Scraper")
     parser.add_argument("--full", action="store_true", help="Full scrape (all pages)")
-    parser.add_argument("--pages", type=int, default=2, help="Number of pages to scrape (default: 2)")
+    parser.add_argument("--pages", type=int, default=1, help="Number of pages to scrape (default: 1)")
     parser.add_argument("--sites", nargs="+", default=["msone", "teamgoat", "moviemirror"],
                         choices=["msone", "teamgoat", "moviemirror"],
                         help="Which sites to scrape")
