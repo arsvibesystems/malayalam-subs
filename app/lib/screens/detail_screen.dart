@@ -173,7 +173,7 @@ class DetailScreen extends StatelessWidget {
                           } else if (subtitle.sourceSite == 'teamgoat') {
                             botUrl = 'https://t.me/Team_Goat_Bot';
                           } else if (subtitle.sourceSite == 'ddmlsub') {
-                            botUrl = 'https://t.me/ddmlsub';
+                            botUrl = 'https://t.me/ddmlsubbot';
                           }
 
                           if (botUrl.isNotEmpty) {
