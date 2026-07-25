@@ -64,15 +64,23 @@ def assign_interleaved_timestamps(items: List[Dict]) -> List[Dict]:
             else:
                 site_items.sort(key=lambda x: x.get("updated_at", ""))
 
-    # Assign chronological percentage (0.0 = oldest, 1.0 = newest)
+    # Assign chronological percentage scaled by site activity
+    # (e.g. DD stopped releasing new subs long ago, so its max is 0.94)
+    max_pct_map = {
+        "msone": 1.0,
+        "teamgoat": 0.998,
+        "moviemirror": 0.995,
+        "ddmlsub": 0.94,
+    }
     all_items = []
     for site, site_items in by_site.items():
+        limit = max_pct_map.get(site, 1.0)
         for i, item in enumerate(site_items):
-            item["_chrono_pct"] = i / max(1, len(site_items) - 1)
+            item["_chrono_pct"] = (i / max(1, len(site_items) - 1)) * limit
             all_items.append(item)
 
-    # Sort all items by percentage; use year as tiebreaker
-    all_items.sort(key=lambda x: (x["_chrono_pct"], x.get("year") or 0))
+    # Sort all items by percentage; use release_number as tiebreaker (never movie release year!)
+    all_items.sort(key=lambda x: (x["_chrono_pct"], x.get("release_number") or 0))
 
     # Assign new timestamps spanning smoothly from 2016 to current date
     start_date = datetime(2016, 1, 1, tzinfo=timezone.utc)
