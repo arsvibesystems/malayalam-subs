@@ -74,10 +74,14 @@ def assign_interleaved_timestamps(items: List[Dict]) -> List[Dict]:
     # Sort all items by percentage; use year as tiebreaker
     all_items.sort(key=lambda x: (x["_chrono_pct"], x.get("year") or 0))
 
-    # Assign new timestamps: 1 hour apart starting from 2020-01-01
-    base_date = datetime(2020, 1, 1, tzinfo=timezone.utc)
+    # Assign new timestamps spanning smoothly from 2016 to current date
+    start_date = datetime(2016, 1, 1, tzinfo=timezone.utc)
+    end_date = datetime.now(timezone.utc)
+    total_seconds = (end_date - start_date).total_seconds()
+    step_seconds = total_seconds / max(1, len(all_items) - 1)
+
     for i, item in enumerate(all_items):
-        new_date = base_date + timedelta(hours=i)
+        new_date = start_date + timedelta(seconds=i * step_seconds)
         item["updated_at"] = new_date.isoformat()
         item["created_at"] = new_date.isoformat()
         del item["_chrono_pct"]
@@ -242,6 +246,7 @@ def main():
     parser.add_argument("--sites", nargs="+", default=["msone", "teamgoat", "moviemirror"],
                         choices=["msone", "teamgoat", "moviemirror", "ddmlsub"],
                         help="Which sites to scrape")
+    parser.add_argument("--reindex", action="store_true", help="Reindex and interleave timestamps across all sites chronologically")
     args = parser.parse_args()
 
     max_pages = 500 if args.full else args.pages
@@ -253,6 +258,13 @@ def main():
     # Load existing data
     existing_data = load_existing_data()
     logger.info(f"Existing data: {len(existing_data)} items")
+
+    if args.reindex:
+        logger.info("Reindexing and interleaving all items chronologically...")
+        interleaved_data = assign_interleaved_timestamps(existing_data)
+        save_data(interleaved_data)
+        logger.info("Reindexing complete!")
+        return
 
     # Run scrapers
     all_new_items: List[Dict] = []
