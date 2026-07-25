@@ -211,10 +211,7 @@ class HomeScreen extends StatelessWidget {
                             children: provider.stats.perSource.entries.map((entry) {
                               final site = entry.key;
                               final siteStats = entry.value;
-                              String displayName = site;
-                              if (site == 'teamgoat') displayName = 'Team GOAT';
-                              if (site == 'msone') displayName = 'MSone';
-                              if (site == 'moviemirror') displayName = 'Movie Mirror';
+                              final displayName = AppTheme.getSourceLabel(site);
     
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 16),

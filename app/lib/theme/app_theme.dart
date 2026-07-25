@@ -18,6 +18,7 @@ class AppTheme {
   static const Color msoneBadge = Color(0xFF2979FF);
   static const Color goatBadge = Color(0xFFE53935);
   static const Color mirrorBadge = Color(0xFFFFB300);
+  static const Color ddBadge = Color(0xFF0088CC);
 
   static Color getSourceColor(String source) {
     switch (source.toLowerCase()) {
@@ -27,6 +28,8 @@ class AppTheme {
         return goatBadge;
       case 'moviemirror':
         return mirrorBadge;
+      case 'ddmlsub':
+        return ddBadge;
       default:
         return accentTeal;
     }
@@ -40,6 +43,8 @@ class AppTheme {
         return 'Team GOAT';
       case 'moviemirror':
         return 'Movie Mirror';
+      case 'ddmlsub':
+        return 'DD';
       default:
         return source;
     }
