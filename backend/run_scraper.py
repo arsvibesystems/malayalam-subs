@@ -111,10 +111,13 @@ def merge_results(existing: List[Dict], new_items: List[Dict]) -> List[Dict]:
             continue
 
         if slug in existing_map:
-            # EXISTING item re-scraped: update content but PRESERVE timestamps
+            # EXISTING item re-scraped: only update fields that are not empty or None,
+            # so weak fallback scrapers (like RSS feed) never erase existing rich metadata!
             old_created = existing_map[slug].get("created_at")
             old_updated = existing_map[slug].get("updated_at")
-            existing_map[slug].update(item)
+            for k, v in item.items():
+                if v is not None and v != "":
+                    existing_map[slug][k] = v
             if old_created:
                 existing_map[slug]["created_at"] = old_created
             if old_updated:
