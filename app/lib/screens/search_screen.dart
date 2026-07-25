@@ -227,13 +227,14 @@ class _SearchScreenState extends State<SearchScreen> {
 
     final List<Widget> chips = [];
     
-    void addChips(List<String> items, Function(String) onRemove) {
+    void addChips(List<String> items, Function(String) onRemove, {String Function(String)? labelMapper}) {
       for (final item in items) {
+        final displayLabel = labelMapper != null ? labelMapper(item) : item;
         chips.add(
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: InputChip(
-              label: Text(item, style: const TextStyle(color: Colors.white, fontSize: 12)),
+              label: Text(displayLabel, style: const TextStyle(color: Colors.white, fontSize: 12)),
               backgroundColor: AppTheme.bgCard,
               deleteIcon: const Icon(Icons.close_rounded, size: 14, color: AppTheme.textMuted),
               onDeleted: () => onRemove(item),
@@ -248,9 +249,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
     addChips(provider.selectedLanguages, provider.toggleLanguageFilter);
     addChips(provider.selectedGenres, provider.toggleGenreFilter);
-    addChips(provider.selectedSources, provider.toggleSourceFilter);
+    addChips(provider.selectedSources, provider.toggleSourceFilter, labelMapper: _formatSource);
     addChips(provider.selectedTranslators, provider.toggleTranslatorFilter);
-    addChips(provider.selectedReleaseTypes, provider.toggleReleaseTypeFilter);
+    addChips(provider.selectedReleaseTypes, provider.toggleReleaseTypeFilter, labelMapper: _formatType);
 
     if (chips.isEmpty) return const SizedBox.shrink();
 
@@ -347,6 +348,7 @@ class _SearchScreenState extends State<SearchScreen> {
             provider.selectedSources,
             provider.stats.filters.sources,
             (val) => provider.toggleSourceFilter(val),
+            labelMapper: _formatSource,
           ),
           const SizedBox(height: 10),
 
@@ -367,6 +369,7 @@ class _SearchScreenState extends State<SearchScreen> {
             provider.selectedReleaseTypes,
             provider.stats.filters.releaseTypes,
             (val) => provider.toggleReleaseTypeFilter(val),
+            labelMapper: _formatType,
           ),
           const SizedBox(height: 14),
 
@@ -425,11 +428,12 @@ class _SearchScreenState extends State<SearchScreen> {
     IconData icon,
     List<String> selectedValues,
     List<String> options,
-    ValueChanged<String> onToggle,
-  ) {
+    ValueChanged<String> onToggle, {
+    String Function(String)? labelMapper,
+  }) {
     return GestureDetector(
       onTap: () {
-        _showMultiSelectSheet(label, options, selectedValues, onToggle);
+        _showMultiSelectSheet(label, options, selectedValues, onToggle, labelMapper: labelMapper);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -467,8 +471,9 @@ class _SearchScreenState extends State<SearchScreen> {
     String title,
     List<String> options,
     List<String> selectedValues,
-    ValueChanged<String> onToggle,
-  ) {
+    ValueChanged<String> onToggle, {
+    String Function(String)? labelMapper,
+  }) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -495,10 +500,11 @@ class _SearchScreenState extends State<SearchScreen> {
                       itemCount: options.length,
                       itemBuilder: (context, index) {
                         final option = options[index];
+                        final displayLabel = labelMapper != null ? labelMapper(option) : option;
                         final isSelected = selectedValues.contains(option);
                         return CheckboxListTile(
                           value: isSelected,
-                          title: Text(option, style: TextStyle(color: isSelected ? Colors.white : AppTheme.textSecondary)),
+                          title: Text(displayLabel, style: TextStyle(color: isSelected ? Colors.white : AppTheme.textSecondary)),
                           activeColor: AppTheme.accent,
                           checkColor: Colors.white,
                           side: const BorderSide(color: AppTheme.textMuted),
@@ -541,5 +547,31 @@ class _SearchScreenState extends State<SearchScreen> {
         if (selected) provider.setSortBy(value);
       },
     );
+  }
+
+  String _formatSource(String val) {
+    switch (val.toLowerCase()) {
+      case 'ddmlsub':
+        return 'DD Malayalam';
+      case 'moviemirror':
+        return 'Movie Mirror';
+      case 'msone':
+        return 'MSone';
+      case 'teamgoat':
+        return 'Team Goat';
+      default:
+        return val;
+    }
+  }
+
+  String _formatType(String val) {
+    switch (val.toLowerCase()) {
+      case 'movie':
+        return 'Movie';
+      case 'series':
+        return 'Series';
+      default:
+        return val.isNotEmpty ? val[0].toUpperCase() + val.substring(1) : val;
+    }
   }
 }
