@@ -54,19 +54,25 @@ class SubtitleProvider extends ChangeNotifier {
 
       for (int i = 0; i < topItems.length; i++) {
         final sub = topItems[i];
-        if (sub.sourceSite == 'msone' && sub.thumbnailUrl.isEmpty) {
+        if (sub.sourceSite == 'msone' &&
+            (sub.thumbnailUrl.isEmpty || sub.imdbRating == null || sub.releaseNumber == null || sub.genres.isEmpty)) {
           futures.add(() async {
             final data = await MetadataFetcher.fetchMissingData(sub.sourceUrl);
             if (data != null && data.isNotEmpty) {
               final newSub = sub.copyWith(
-                thumbnailUrl: data['thumbnail_url'],
-                imdbRating: data['imdb_rating'],
-                description: data['description'],
+                thumbnailUrl: data['thumbnail_url'] ?? sub.thumbnailUrl,
+                imdbRating: data['imdb_rating'] ?? sub.imdbRating,
+                releaseNumber: data['release_number'] ?? sub.releaseNumber,
+                genres: data['genres'] ?? sub.genres,
+                certificate: data['certificate'] ?? sub.certificate,
+                description: data['description'] ?? sub.description,
               );
               // Find the exact index in the main list
               final index = _allSubtitles.indexWhere((s) => s.slug == sub.slug);
               if (index != -1) {
                 _allSubtitles[index] = newSub;
+                _applyFilters();
+                notifyListeners();
               }
             }
           }());

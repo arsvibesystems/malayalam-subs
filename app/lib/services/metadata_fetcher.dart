@@ -29,30 +29,52 @@ class MetadataFetcher {
         result['thumbnail_url'] = ogImage.attributes['content'];
       }
 
-      // Extract IMDb Rating
-      // Format usually like: <span class="imdb-rating">8.5</span>
-      final ratingElements = document.querySelectorAll('span, div, p');
-      for (final el in ratingElements) {
-        final text = el.text.trim();
-        if (text.contains('IMDB:') || text.contains('IMDb:')) {
-          final RegExp ratingRegex = RegExp(r'(\d+\.\d+)');
-          final match = ratingRegex.firstMatch(text);
-          if (match != null) {
-            result['imdb_rating'] = double.tryParse(match.group(1)!);
-            break;
-          }
+      final bodyText = document.body?.text ?? '';
+
+      // Extract IMDb Rating (matching patterns like 7.7/10 or 8/10 anywhere in page text)
+      final RegExp ratingRegex = RegExp(r'(\d+(?:\.\d+)?)\s*/\s*10');
+      final ratingMatch = ratingRegex.firstMatch(bodyText);
+      if (ratingMatch != null) {
+        result['imdb_rating'] = double.tryParse(ratingMatch.group(1)!);
+      } else {
+        // Fallback: look for IMDb: 8.5 format
+        final RegExp altRatingRegex = RegExp(r'IMDB\s*(?:Rating)?\s*[:\-–]\s*(\d+(?:\.\d+)?)', caseSensitive: false);
+        final altMatch = altRatingRegex.firstMatch(bodyText);
+        if (altMatch != null) {
+          result['imdb_rating'] = double.tryParse(altMatch.group(1)!);
         }
       }
 
+      // Extract Release Number (matching patterns like റിലീസ് : 3700 or Release - 3700)
+      final RegExp releaseRegex = RegExp(r'(?:റിലീസ്|Release)\s*[:\-–\s]\s*(\d+)', caseSensitive: false);
+      final relMatch = releaseRegex.firstMatch(bodyText);
+      if (relMatch != null) {
+        result['release_number'] = int.tryParse(relMatch.group(1)!);
+      }
+
+      // Extract genres
+      final genreLinks = document.querySelectorAll('a[href*="/genres/"]');
+      if (genreLinks.isNotEmpty) {
+        final genresList = genreLinks.map((e) => e.text.trim()).where((g) => g.isNotEmpty).toSet().toList();
+        if (genresList.isNotEmpty) {
+          result['genres'] = genresList.join(', ');
+        }
+      }
+
+      // Extract certificate
+      final certLinks = document.querySelectorAll('a[href*="/certificates/"]');
+      if (certLinks.isNotEmpty) {
+        result['certificate'] = certLinks.first.text.trim();
+      }
+
       // Extract description
-      // usually in <div class="entry-content"> or similar
       final contentDiv = document.querySelector('.entry-content');
       if (contentDiv != null) {
         final paragraphs = contentDiv.querySelectorAll('p');
         String fullDescription = '';
         for (final p in paragraphs) {
           final text = p.text.trim();
-          if (text.isNotEmpty && !text.contains('The post')) {
+          if (text.isNotEmpty && !text.contains('The post') && !text.contains('ഡൗൺലോഡ്')) {
             fullDescription += '$text\n\n';
           }
         }
