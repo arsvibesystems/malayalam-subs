@@ -65,6 +65,48 @@ class Subtitle {
     );
   }
 
+  Subtitle copyWith({
+    String? title,
+    String? slug,
+    String? thumbnailUrl,
+    String? movieLanguage,
+    String? genres,
+    double? imdbRating,
+    String? imdbUrl,
+    String? translator,
+    String? sourceSite,
+    String? sourceUrl,
+    String? downloadUrl,
+    String? releaseType,
+    int? year,
+    String? certificate,
+    String? description,
+    String? createdAt,
+    String? updatedAt,
+    int? releaseNumber,
+  }) {
+    return Subtitle(
+      title: title ?? this.title,
+      slug: slug ?? this.slug,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      movieLanguage: movieLanguage ?? this.movieLanguage,
+      genres: genres ?? this.genres,
+      imdbRating: imdbRating ?? this.imdbRating,
+      imdbUrl: imdbUrl ?? this.imdbUrl,
+      translator: translator ?? this.translator,
+      sourceSite: sourceSite ?? this.sourceSite,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
+      downloadUrl: downloadUrl ?? this.downloadUrl,
+      releaseType: releaseType ?? this.releaseType,
+      year: year ?? this.year,
+      certificate: certificate ?? this.certificate,
+      description: description ?? this.description,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      releaseNumber: releaseNumber ?? this.releaseNumber,
+    );
+  }
+
   /// Split genres string into a list
   List<String> get genreList =>
       genres.split(',').map((g) => g.trim()).where((g) => g.isNotEmpty).toList();

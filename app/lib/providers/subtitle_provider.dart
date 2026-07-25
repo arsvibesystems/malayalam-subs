@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/subtitle.dart';
 import '../services/api_service.dart';
+import '../services/metadata_fetcher.dart';
 
 class SubtitleProvider extends ChangeNotifier {
   List<Subtitle> _allSubtitles = [];
@@ -46,6 +47,37 @@ class SubtitleProvider extends ChangeNotifier {
 
       _allSubtitles = results[0] as List<Subtitle>;
       _stats = results[1] as SubtitleStats;
+
+      // Automatically fetch missing metadata for top 20 items
+      final topItems = _allSubtitles.take(20).toList();
+      final futures = <Future<void>>[];
+
+      for (int i = 0; i < topItems.length; i++) {
+        final sub = topItems[i];
+        if (sub.sourceSite == 'msone' && sub.thumbnailUrl.isEmpty) {
+          futures.add(() async {
+            final data = await MetadataFetcher.fetchMissingData(sub.sourceUrl);
+            if (data != null && data.isNotEmpty) {
+              final newSub = sub.copyWith(
+                thumbnailUrl: data['thumbnail_url'],
+                imdbRating: data['imdb_rating'],
+                description: data['description'],
+              );
+              // Find the exact index in the main list
+              final index = _allSubtitles.indexWhere((s) => s.slug == sub.slug);
+              if (index != -1) {
+                _allSubtitles[index] = newSub;
+              }
+            }
+          }());
+        }
+      }
+
+      if (futures.isNotEmpty) {
+        // Wait for all missing metadata fetches to finish without failing
+        await Future.wait(futures).catchError((_) => []);
+      }
+
       _applyFilters();
     } catch (e) {
       _error = e.toString();
