@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from scrapers.msone import MSoneScraper
 from scrapers.teamgoat import TeamGoatScraper
 from scrapers.moviemirror import MovieMirrorScraper
+from scrapers.ddmlsub import DdmlSubScraper
 
 logging.basicConfig(
     level=logging.INFO,
@@ -53,7 +54,7 @@ def assign_interleaved_timestamps(items: List[Dict]) -> List[Dict]:
     # MSone & TeamGoat: by release_number
     # MovieMirror: by release_number if available, else by existing updated_at
     for site, site_items in by_site.items():
-        if site in ("msone", "teamgoat"):
+        if site in ("msone", "teamgoat", "ddmlsub"):
             site_items.sort(key=lambda x: x.get("release_number") or 0)
         else:
             # MovieMirror: try release_number first, fall back to updated_at
@@ -239,7 +240,7 @@ def main():
     parser.add_argument("--full", action="store_true", help="Full scrape (all pages)")
     parser.add_argument("--pages", type=int, default=1, help="Number of pages to scrape (default: 1)")
     parser.add_argument("--sites", nargs="+", default=["msone", "teamgoat", "moviemirror"],
-                        choices=["msone", "teamgoat", "moviemirror"],
+                        choices=["msone", "teamgoat", "moviemirror", "ddmlsub"],
                         help="Which sites to scrape")
     args = parser.parse_args()
 
@@ -260,6 +261,7 @@ def main():
         "msone": MSoneScraper,
         "teamgoat": TeamGoatScraper,
         "moviemirror": MovieMirrorScraper,
+        "ddmlsub": DdmlSubScraper,
     }
 
     for site_key in args.sites:
