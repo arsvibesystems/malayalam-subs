@@ -246,7 +246,7 @@ class SubtitleProvider extends ChangeNotifier {
         results.sort((a, b) => (b.year ?? 0).compareTo(a.year ?? 0));
         break;
       case 'oldest':
-        results.sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
+        results.sort((a, b) => a.createdAt.compareTo(b.createdAt));
         break;
       case 'release_desc':
         results.sort((a, b) => (b.releaseNumber ?? 0).compareTo(a.releaseNumber ?? 0));
@@ -256,7 +256,7 @@ class SubtitleProvider extends ChangeNotifier {
         break;
       case 'latest':
       default:
-        results.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+        results.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         break;
     }
 
