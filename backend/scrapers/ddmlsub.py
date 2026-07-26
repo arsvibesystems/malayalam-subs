@@ -41,20 +41,20 @@ class DdmlSubScraper(BaseScraper):
         """Not used when scrape_all is overridden."""
         return None
 
-    def _parse_release_text(self, text: str, post_id: str, thumb_url: Optional[str]) -> Dict[str, Any]:
+    def _parse_release_text(self, text: str, post_id: str, thumb_url: Optional[str], srt_filename: str = "") -> Dict[str, Any]:
         """Parse structured release metadata from Telegram post text."""
         lines = [self._clean_text(l) for l in text.split('\n') if self._clean_text(l) and l.strip() != '▪️']
 
         data: Dict[str, Any] = {
             "source_site": self.SITE_KEY,
-            "source_url": f"https://t.me/{post_id}" if post_id else "",
+            "source_url": f"https://t.me/ddmlsub/{post_id}" if post_id else "",
             "thumbnail_url": thumb_url or "",
             "imdb_url": "",
             "certificate": "",
         }
 
         # --- Release Number ---
-        rn_match = re.search(r'(?:റിലീസ്|റീലിസ്|Release)\s*[-–: ]*\s*(\d+)', text, re.IGNORECASE)
+        rn_match = re.search(r'(?:റിലീസ്|റീലിസ്|Release)[^\d]*(\d+)', text, re.IGNORECASE)
         if rn_match:
             data["release_number"] = int(rn_match.group(1))
         else:
@@ -65,23 +65,31 @@ class DdmlSubScraper(BaseScraper):
         year = None
         eng_title = ""
         ml_title = ""
+        desc_lines = []
+        seen_meta = False
 
-        for line in lines[:6]:  # Look in the first few lines of text
-            if any(w in line.lower() for w in ['റിലീസ്', 'റീലിസ്', 'release', 'imdb', 'rating', 'ഭാഷ', 'സംവിധാനം', 'പരിഭാഷ', 'ജോണർ']):
+        for line in lines:
+            if any(w in line.lower() for w in ['#ddmlsub', 'dd മലയാളം', 'ഡി.ഡി മലയാളം', 'അറിവിലേക്കായി', '👉🏻', '👇', 'പോസ്റ്റർ']):
                 continue
-            ym = re.search(r'\((\d{4})\)', line)
-            if ym:
-                year = int(ym.group(1))
-                line_clean = re.sub(r'\s*\(\d{4}\)', '', line).strip()
-                if re.search(r'[a-zA-Z]', line_clean):
-                    eng_title = f"{line_clean} ({year})"
-                else:
-                    ml_title = line_clean
-            elif len(line) > 2 and not eng_title and not ml_title:
+            if any(w in line for w in ['കഥാവിവരണം', 'ഭാഷ', 'സംവിധാനം', 'പരിഭാഷ', 'ജോണർ', 'IMDb', 'റിലീസ്']):
+                seen_meta = True
+                continue
+            if not seen_meta and re.search(r'[a-zA-Zമലയാളം]', line) and len(line) > 2 and not line.isdigit():
+                ym = re.search(r'\(\d{4}\)', line)
                 if re.search(r'[a-zA-Z]', line):
-                    eng_title = line
+                    if not eng_title:
+                        eng_title = line
                 else:
-                    ml_title = line
+                    if not ml_title:
+                        ml_title = line
+            elif seen_meta and len(line) > 15 and not any(k in line for k in ['/10', '%', '👍', '👎', '❤', '🔥', 'അഭിപ്രായങ്ങൾ']):
+                desc_lines.append(line)
+
+        # Fallback if no meta tags were found but we have long lines
+        if not desc_lines:
+            for line in lines:
+                if len(line) > 40 and not any(w in line for w in ['റിലീസ്', 'ഭാഷ', 'സംവിധാനം', 'പരിഭാഷ', 'ജോണർ', 'ഡി.ഡി മലയാളത്തിന്റെ', 'IMDb']):
+                    desc_lines.append(line)
 
         if eng_title and ml_title:
             title_candidate = f"{eng_title} / {ml_title}"
@@ -91,7 +99,12 @@ class DdmlSubScraper(BaseScraper):
             title_candidate = ml_title if not year else f"{ml_title} ({year})"
 
         data["title"] = title_candidate
-        data["year"] = year or self._extract_year(title_candidate)
+        data["year"] = self._extract_year(title_candidate) or self._extract_year(text)
+
+        # If it's a standalone .srt post, we use the filename as the title if title wasn't found
+        if srt_filename and title_candidate == "Unknown":
+            data["title"] = srt_filename.replace(".srt", "").strip()
+            data["year"] = self._extract_year(srt_filename)
 
         # --- IMDb Rating ---
         imdb_match = re.search(r'(\d+(?:\.\d+)?)\s*/\s*10', text)
@@ -139,24 +152,11 @@ class DdmlSubScraper(BaseScraper):
             data["release_type"] = "movie"
 
         # --- Description ---
-        desc_lines = []
-        capture_desc = False
-        for line in lines:
-            if any(w in line for w in ['കഥാവിവരണം', '👇', 'പോസ്റ്റർ', 'ജോണർ', '#']):
-                capture_desc = True
-                continue
-            if any(w in line for w in ['ഡി.ഡി മലയാളത്തിന്റെ', '@ddmlsub', 'അറിവിലേക്കായി', '👉🏻']):
-                continue
-            if capture_desc and len(line) > 15:
-                desc_lines.append(line)
-        if not desc_lines:
-            for line in lines:
-                if len(line) > 40 and not any(w in line for w in ['റിലീസ്', 'ഭാഷ', 'സംവിധാനം', 'പരിഭാഷ', 'ജോണർ', 'ഡി.ഡി മലയാളത്തിന്റെ']):
-                    desc_lines.append(line)
         data["description"] = "\n\n".join(desc_lines)
 
         # --- Slug ---
-        data["slug"] = self._make_slug(title_candidate, data["source_url"])
+        data["download_url"] = data["source_url"]
+        data["slug"] = self._make_slug(data["title"], data["source_url"])
 
         return data
 
@@ -164,42 +164,51 @@ class DdmlSubScraper(BaseScraper):
         """Group and parse Telegram HTML message divs into subtitle release objects."""
         results = []
         curr_thumb = None
-        curr_item = None
 
         for m in messages:
             post_id = m.get("data-post", "")
+            post_id_num = post_id.split('/')[-1] if '/' in post_id else post_id
 
-            # Check for photo poster
-            photo_wrap = m.find("a", class_="tgme_widget_message_photo_wrap") or m.find("i", class_="tgme_widget_message_photo_image")
+            # Check for photo poster or reply thumb
+            photo_wrap = m.find("a", class_="tgme_widget_message_photo_wrap") or m.find("i", class_="tgme_widget_message_photo_image") or m.find("i", class_="tgme_widget_message_reply_thumb")
             if photo_wrap:
                 style_attr = photo_wrap.get("style", "") or photo_wrap.get("data-content", "")
                 url_match = re.search(r'url\([\'"]?(.*?)[\'"]?\)', style_attr)
-                if not url_match and photo_wrap.find("img"):
-                    img_tag = photo_wrap.find("img")
-                    if img_tag and img_tag.get("src"):
-                        curr_thumb = img_tag["src"]
-                elif url_match:
+                if url_match:
                     curr_thumb = url_match.group(1)
+                elif photo_wrap.find("img") and photo_wrap.find("img").get("src"):
+                    curr_thumb = photo_wrap.find("img")["src"]
 
-            # Check for metadata text post
             text_div = m.find("div", class_="tgme_widget_message_text")
-            if text_div:
-                text = text_div.get_text("\n")
-                if any(k in text for k in ['റിലീസ്', 'റീലിസ്', 'Release', 'IMDb', 'IMDB']) and len(text) > 40:
-                    curr_item = self._parse_release_text(text, post_id, curr_thumb)
-                    curr_item["download_url"] = f"https://t.me/{post_id}" if post_id else self.BASE_URL
-
-            # Check for attached document (.srt / .zip file)
             doc_wrap = m.find("a", class_="tgme_widget_message_document_wrap")
-            if doc_wrap and curr_item:
-                doc_link = doc_wrap.get("href", "")
-                if doc_link:
-                    curr_item["download_url"] = doc_link
-                if curr_item not in results:
-                    results.append(curr_item)
-            elif curr_item and curr_item not in results:
-                # If no doc attached immediately, still record the release with post url as download
-                results.append(curr_item)
+            
+            text = text_div.get_text("\n") if text_div else ""
+            
+            # Check if this message is a structural release metadata post
+            is_metadata_post = False
+            if text and any(k in text for k in ['ഭാഷ', 'സംവിധാനം', 'പരിഭാഷ', 'ജോണർ', 'IMDb', 'റിലീസ്']):
+                is_metadata_post = True
+            
+            # Check if this message is a standalone document (like an episode .srt)
+            is_standalone_doc = False
+            srt_filename = ""
+            if doc_wrap and ".srt" in text.lower():
+                is_standalone_doc = True
+                srt_filename = text.split("\n")[0].strip()
+
+            if is_metadata_post or is_standalone_doc:
+                item = self._parse_release_text(text, post_id_num, curr_thumb, srt_filename=srt_filename)
+                
+                # If there's an attached document link, use it
+                if doc_wrap:
+                    doc_link = doc_wrap.get("href", "")
+                    if doc_link:
+                        item["download_url"] = doc_link
+                        
+                results.append(item)
+                
+                # Reset curr_thumb so the next release doesn't steal it
+                curr_thumb = None
 
         return results
 
