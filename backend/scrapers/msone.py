@@ -479,6 +479,12 @@ class MSoneScraper(BaseScraper):
                     if buttons_meta["genres_list"]:
                         buttons_meta["genres"] = ", ".join(buttons_meta["genres_list"])
 
+                    # If this URL was also found in the RSS feed, upgrade to the HIGH QUALITY WordPress poster!
+                    if download_url and download_url in self.rss_data:
+                        rss_item = self.rss_data[download_url]
+                        if rss_item.get("thumbnail_url") and "telesco.pe" not in rss_item["thumbnail_url"]:
+                            curr_thumb = rss_item["thumbnail_url"]
+
                     item = self._parse_release_text(text, post_id, curr_thumb, download_url, buttons_meta)
                     
                     time_tag = m.find("time", class_="time")
@@ -500,6 +506,10 @@ class MSoneScraper(BaseScraper):
         all_items = []
         seen_slugs = set()
         next_before: Optional[int] = None
+
+        # Pre-fetch the latest 15 releases from RSS to guarantee High-Quality WordPress posters
+        self.logger.info("Pre-fetching high-quality posters from MSone RSS feed...")
+        self.scrape_listing_page(1)
 
         for page in range(1, max_pages + 1):
             if page == 1:
