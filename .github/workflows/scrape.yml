@@ -49,6 +49,12 @@ jobs:
           else
             python run_scraper.py --pages ${{ github.event.inputs.pages || '1' }}
           fi
+          
+          # Automatically upgrade any blurry Telegram posters to HQ WordPress posters
+          python fix_latest_posters.py
+          
+          # Automatically recalculate chronological interleaving for all sources
+          python fix_interleaving.py
 
       - name: Commit and push data
         run: |
