@@ -18,6 +18,7 @@ class MSoneScraper(BaseScraper):
     SITE_NAME = "MSone (malayalamsubtitles.org)"
     SITE_KEY = "msone"
     BASE_URL = "https://malayalamsubtitles.org"
+    TELEGRAM_URL = "https://t.me/s/msone"
 
     # Malayalam to English language mapping
     LANGUAGE_MAP = {
@@ -311,6 +312,230 @@ class MSoneScraper(BaseScraper):
             lang = match.group(1).capitalize()
             return lang
         return "Unknown"
+
+    def _parse_release_text(self, text: str, post_id: str, thumb_url: Optional[str], download_url: str, buttons_meta: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse structured release metadata from MSone Telegram post text and buttons."""
+        lines = [self._clean_text(l) for l in text.split('\n') if self._clean_text(l)]
+
+        data: Dict[str, Any] = {
+            "source_site": self.SITE_KEY,
+            "source_url": download_url if download_url else (f"https://t.me/{post_id}" if post_id else self.BASE_URL),
+            "thumbnail_url": thumb_url or "",
+            "imdb_url": buttons_meta.get("imdb_url", ""),
+            "certificate": "",
+        }
+
+        # --- Release Number ---
+        rn_match = re.search(r'(?:റിലീസ്|Release)[^\d]*(\d+)', text, re.IGNORECASE)
+        if rn_match:
+            data["release_number"] = int(rn_match.group(1))
+        else:
+            data["release_number"] = None
+
+        # --- Title & Year ---
+        title_candidate = "Unknown"
+        year = None
+        eng_title = ""
+        ml_title = ""
+        desc_lines = []
+        seen_meta = False
+
+        for line in lines:
+            if any(w in line.lower() for w in ['#msone', 'release', '🔸', '🟥', '🦾', '🐉', '🚪', '🔥', '⭐', '🎬', '📽', '🍅', '💵', '🛑', '🧩', '⭐️', '👀', '👑', '🌐', 'അഭിപ്രായങ്ങൾ', 'download', 'പോസ്റ്റർ']):
+                continue
+            if any(w in line for w in ['പരിഭാഷ', 'ഭാഷ:', 'സംവിധാനം', 'നിർമ്മാണം:', 'ജോണർ:', 'IMDb', 'രചന']):
+                seen_meta = True
+                continue
+            if not seen_meta and re.search(r'[a-zA-Zമലയാളം]', line) and len(line) > 2 and not line.isdigit():
+                ym = re.search(r'\(\d{4}\)', line)
+                if re.search(r'[a-zA-Z]', line):
+                    if not eng_title:
+                        eng_title = line
+                else:
+                    if not ml_title:
+                        ml_title = line
+            elif seen_meta and len(line) > 25 and not any(k in line for k in ['/10', '%', 'അഭിപ്രായങ്ങൾ']):
+                desc_lines.append(line)
+
+        if eng_title and ml_title:
+            title_candidate = f"{eng_title} / {ml_title}"
+        elif eng_title:
+            title_candidate = eng_title
+        elif ml_title:
+            title_candidate = ml_title if not year else f"{ml_title} ({year})"
+
+        data["title"] = title_candidate
+        data["year"] = self._extract_year(title_candidate) or self._extract_year(text)
+
+        # --- IMDb Rating ---
+        imdb_match = re.search(r'(\d+(?:\.\d+)?)\s*/\s*10', text)
+        data["imdb_rating"] = float(imdb_match.group(1)) if imdb_match else None
+
+        # --- Language ---
+        lang_str = buttons_meta.get("language", "")
+        if not lang_str:
+            lang_match = re.search(r'(?:ഭാഷ|Language)\s*[:\-–]\s*([^\n]+)', text, re.IGNORECASE)
+            if lang_match:
+                raw_lang = self._clean_text(lang_match.group(1)).split()[0]
+                lang_str = self.LANGUAGE_MAP.get(raw_lang, raw_lang)
+        data["movie_language"] = lang_str or "Malayalam"
+
+        # --- Director ---
+        dir_str = buttons_meta.get("director", "")
+        if not dir_str:
+            dir_match = re.search(r'(?:സംവിധാനം|Director)\s*[:\-–]\s*([^\n]+)', text, re.IGNORECASE)
+            if dir_match:
+                dir_str = self._clean_text(dir_match.group(1))
+        data["director"] = dir_str
+
+        # --- Translator ---
+        tr_str = buttons_meta.get("translator", "")
+        if not tr_str:
+            tr_match = re.search(r'(?:പരിഭാഷ|Translator)\s*[:\-–]\s*([^\n]+)', text, re.IGNORECASE)
+            if tr_match:
+                tr_str = self._clean_text(tr_match.group(1))
+        data["translator"] = tr_str
+
+        # --- Genres ---
+        genres_str = buttons_meta.get("genres", "")
+        if not genres_str:
+            genres_list = []
+            genre_match = re.search(r'(?:ജോണർ|Genre)\s*[:\-–]\s*([^\n]+)', text, re.IGNORECASE)
+            if genre_match:
+                for g in re.split(r'[,/ ]+', genre_match.group(1)):
+                    g_clean = self._clean_text(g)
+                    if g_clean in self.GENRE_MAP:
+                        genres_list.append(self.GENRE_MAP[g_clean])
+                    elif g_clean:
+                        genres_list.append(g_clean)
+            genres_str = ", ".join(genres_list)
+        data["genres"] = genres_str
+
+        # --- Release Type ---
+        if any(w in text.lower() for w in ['#series', 'സീസൺ', 'season', 'എപ്പിസോഡ്', 'episode']):
+            data["release_type"] = "series"
+        else:
+            data["release_type"] = "movie"
+
+        # --- Description ---
+        data["description"] = "\n\n".join(desc_lines)
+
+        # --- Download URL & Slug ---
+        data["download_url"] = download_url if download_url else data["source_url"]
+        data["slug"] = self._make_slug(title_candidate, data["download_url"])
+
+        return data
+
+    def _parse_messages(self, messages: List[Any]) -> List[Dict[str, Any]]:
+        """Group and parse MSone Telegram channel messages into subtitle release objects."""
+        results = []
+        curr_thumb = None
+
+        for m in messages:
+            post_id = m.get("data-post", "")
+
+            # Check for photo wrap or reply thumb
+            photo_wrap = m.find("a", class_="tgme_widget_message_photo_wrap") or m.find("i", class_="tgme_widget_message_photo_image") or m.find("i", class_="tgme_widget_message_reply_thumb")
+            if photo_wrap:
+                style_attr = photo_wrap.get("style", "") or photo_wrap.get("data-content", "")
+                url_match = re.search(r'url\([\'"]?(.*?)[\'"]?\)', style_attr)
+                if url_match:
+                    curr_thumb = url_match.group(1)
+                elif photo_wrap.find("img") and photo_wrap.find("img").get("src"):
+                    curr_thumb = photo_wrap.find("img")["src"]
+
+            text_div = m.find("div", class_="tgme_widget_message_text")
+            if text_div:
+                text = text_div.get_text("\n")
+                if "Release" in text and len(text) > 40:
+                    # Parse buttons and links in this message
+                    download_url = ""
+                    buttons_meta: Dict[str, Any] = {"genres_list": [], "lang_list": []}
+                    for a in m.find_all("a", href=True):
+                        href = a["href"]
+                        a_text = self._clean_text(a.get_text())
+                        if "/languages/" in href or "Download" in a_text or "ഡൗൺലോഡ്" in a_text:
+                            if "malayalamsubtitles.org" in href:
+                                download_url = href
+                        elif "/category/" in href:
+                            if a_text in self.LANGUAGE_MAP:
+                                buttons_meta["lang_list"].append(self.LANGUAGE_MAP[a_text])
+                            elif a_text:
+                                buttons_meta["lang_list"].append(a_text.capitalize())
+                        elif "/genres/" in href:
+                            if a_text in self.GENRE_MAP:
+                                buttons_meta["genres_list"].append(self.GENRE_MAP[a_text])
+                            elif a_text:
+                                buttons_meta["genres_list"].append(a_text.capitalize())
+                        elif "/tag/" in href and a_text and not buttons_meta.get("translator"):
+                            buttons_meta["translator"] = a_text
+                        elif "?s=dir_" in href and not buttons_meta.get("director"):
+                            buttons_meta["director"] = self._clean_text(href.split("dir_")[-1].replace("+", " "))
+                        elif "imdb.com" in href:
+                            buttons_meta["imdb_url"] = href
+
+                    if buttons_meta["lang_list"]:
+                        buttons_meta["language"] = ", ".join(buttons_meta["lang_list"])
+                    if buttons_meta["genres_list"]:
+                        buttons_meta["genres"] = ", ".join(buttons_meta["genres_list"])
+
+                    item = self._parse_release_text(text, post_id, curr_thumb, download_url, buttons_meta)
+                    if item not in results:
+                        results.append(item)
+
+        return results
+
+    def scrape_all(self, max_pages: int = 5) -> List[Dict[str, Any]]:
+        """
+        Scrape MSone via official Telegram channel (@msone) web preview.
+        Bypasses Cloudflare entirely while retrieving canonical malayalamsubtitles.org URLs and rich metadata.
+        Each page request fetches 20 messages (~15-20 releases).
+        """
+        all_items = []
+        seen_slugs = set()
+        next_before: Optional[int] = None
+
+        for page in range(1, max_pages + 1):
+            if page == 1:
+                url = self.TELEGRAM_URL
+            else:
+                if not next_before:
+                    self.logger.info(f"No older messages to paginate from page {page}, stopping.")
+                    break
+                url = f"{self.TELEGRAM_URL}?before={next_before}"
+
+            self.logger.info(f"Scraping MSone Telegram page {page}/{max_pages} (url: {url})...")
+            soup = self._fetch_page(url)
+            if not soup:
+                break
+
+            messages = soup.find_all("div", class_="tgme_widget_message")
+            if not messages:
+                self.logger.info("No messages found on page, stopping.")
+                break
+
+            lowest_id = None
+            for m in messages:
+                post_id_str = m.get("data-post", "")
+                if "/" in post_id_str:
+                    try:
+                        msg_num = int(post_id_str.split("/")[-1])
+                        if lowest_id is None or msg_num < lowest_id:
+                            lowest_id = msg_num
+                    except ValueError:
+                        pass
+
+            next_before = lowest_id
+            page_items = self._parse_messages(messages)
+            for item in page_items:
+                slug = item.get("slug", "")
+                if slug and slug not in seen_slugs:
+                    seen_slugs.add(slug)
+                    all_items.append(item)
+                    self.logger.info(f"  ✓ {item.get('title', 'Unknown')} (#{item.get('release_number', 'N/A')})")
+
+        self.logger.info(f"Total scraped from {self.SITE_NAME} via Telegram: {len(all_items)} items")
+        return all_items
 
 
 if __name__ == "__main__":

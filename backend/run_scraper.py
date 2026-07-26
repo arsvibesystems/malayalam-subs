@@ -254,7 +254,7 @@ def main():
     parser = argparse.ArgumentParser(description="Malayalam Subtitles Scraper")
     parser.add_argument("--full", action="store_true", help="Full scrape (all pages)")
     parser.add_argument("--pages", type=int, default=1, help="Number of pages to scrape (default: 1)")
-    parser.add_argument("--sites", nargs="+", default=["msone", "teamgoat", "moviemirror"],
+    parser.add_argument("--sites", nargs="+", default=["msone", "teamgoat", "moviemirror", "ddmlsub"],
                         choices=["msone", "teamgoat", "moviemirror", "ddmlsub"],
                         help="Which sites to scrape")
     parser.add_argument("--reindex", action="store_true", help="Reindex and interleave timestamps across all sites chronologically")

@@ -1,21 +1,21 @@
 {
   "total_count": 5251,
-  "last_updated": "2026-07-26T12:55:08.835949+00:00",
+  "last_updated": "2026-07-25T18:02:54.021750+00:00",
   "per_source": {
     "teamgoat": {
       "total": 489,
       "movies": 443,
       "series": 46
     },
-    "msone": {
-      "total": 3623,
-      "movies": 3256,
-      "series": 367
-    },
     "ddmlsub": {
       "total": 348,
       "movies": 287,
       "series": 61
+    },
+    "msone": {
+      "total": 3623,
+      "movies": 3254,
+      "series": 369
     },
     "moviemirror": {
       "total": 791,
@@ -337,14 +337,9 @@
     "translators": [
       ", ഫസീഹ് അബുബക്കർ, നിതിൻ വി ജി, ഷജീഫ് സലാം, മിഥുൻ സുരേന്ദ്രൻ, ലിജോ എം.ജെ , ദ്രുതഗർഷ്യവ കേശവ്, അഖിൽ ഷാജി, മുഹമ്മദ്‌ സൽമാൻ റഫീഖ് പി, മൂസാ കലിം",
       "Aashkar Hyder",
-      "Aravind Kumar",
-      "Arun BS",
       "Asif Asi",
-      "Boyet V Essave",
       "DEEKEY",
       "Linguistic team international - Malayalam team",
-      "Sarang T K",
-      "Subeesh Chittariparamb",
       "TEAM GOAT",
       "Vishnu Prasad",
       "അക്ഷയ് ആനന്ദ്",
