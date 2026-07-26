@@ -129,6 +129,13 @@ def merge_results(existing: List[Dict], new_items: List[Dict]) -> List[Dict]:
                     if k == "created_at" and old_created:
                         if old_created < v:
                             continue # Keep the older creation date
+                            
+                    # Special handling for posters: don't overwrite high-quality website posters with low-quality Telegram ones
+                    if k == "thumbnail_url" and "telesco.pe" in str(v):
+                        old_thumb = existing_map[slug].get("thumbnail_url", "")
+                        if old_thumb and "telesco.pe" not in old_thumb:
+                            continue # Keep the high-quality old poster
+                            
                     existing_map[slug][k] = v
             
             if "created_at" not in item and old_created:
