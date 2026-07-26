@@ -1,6 +1,6 @@
 {
-  "total_count": 5252,
-  "last_updated": "2026-07-26T16:02:36.794108+00:00",
+  "total_count": 5299,
+  "last_updated": "2026-07-26T16:11:43.508575+00:00",
   "per_source": {
     "moviemirror": {
       "total": 791,
@@ -18,14 +18,13 @@
       "series": 369
     },
     "ddmlsub": {
-      "total": 349,
-      "movies": 288,
+      "total": 396,
+      "movies": 335,
       "series": 61
     }
   },
   "filters": {
     "languages": [
-      "#Vietnamese",
       "Arabic",
       "Bengali",
       "Cantonese",
@@ -254,6 +253,7 @@
       "Political Thriller",
       "Psychological",
       "Psychological Thriller",
+      "Quarentine_fest",
       "Road Movie",
       "Romance",
       "Romantic",
@@ -270,13 +270,13 @@
       "Snuff",
       "Sport",
       "Spy",
+      "Stay_Home",
       "Superhero",
+      "Support_Time",
       "Survival",
       "Suspense",
       "THRILLER",
       "Thriller",
-      "Vietnam",
-      "Vietnamese",
       "War",
       "Western",
       "Zombie",
@@ -331,8 +331,7 @@
       "സർവൈവൽ",
       "ഹിസ്റ്ററി",
       "ഹൊറർ",
-      "…",
-      "🤣"
+      "…"
     ],
     "translators": [
       ", ഫസീഹ് അബുബക്കർ, നിതിൻ വി ജി, ഷജീഫ് സലാം, മിഥുൻ സുരേന്ദ്രൻ, ലിജോ എം.ജെ , ദ്രുതഗർഷ്യവ കേശവ്, അഖിൽ ഷാജി, മുഹമ്മദ്‌ സൽമാൻ റഫീഖ് പി, മൂസാ കലിം",
