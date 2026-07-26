@@ -480,6 +480,12 @@ class MSoneScraper(BaseScraper):
                         buttons_meta["genres"] = ", ".join(buttons_meta["genres_list"])
 
                     item = self._parse_release_text(text, post_id, curr_thumb, download_url, buttons_meta)
+                    
+                    time_tag = m.find("time", class_="time")
+                    if time_tag and time_tag.get("datetime"):
+                        item["created_at"] = time_tag["datetime"]
+                        item["updated_at"] = time_tag["datetime"]
+                        
                     if item not in results:
                         results.append(item)
 

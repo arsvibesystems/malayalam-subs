@@ -125,10 +125,15 @@ def merge_results(existing: List[Dict], new_items: List[Dict]) -> List[Dict]:
             old_updated = existing_map[slug].get("updated_at")
             for k, v in item.items():
                 if v is not None and v != "":
+                    # Special handling for timestamps: keep the oldest created_at!
+                    if k == "created_at" and old_created:
+                        if old_created < v:
+                            continue # Keep the older creation date
                     existing_map[slug][k] = v
-            if old_created:
+            
+            if "created_at" not in item and old_created:
                 existing_map[slug]["created_at"] = old_created
-            if old_updated:
+            if "updated_at" not in item and old_updated:
                 existing_map[slug]["updated_at"] = old_updated
         else:
             # GENUINELY NEW item — collect for ordering
@@ -149,8 +154,10 @@ def merge_results(existing: List[Dict], new_items: List[Dict]) -> List[Dict]:
 
         for i, item in enumerate(new_additions):
             new_ts = (base + timedelta(hours=i + 1)).isoformat()
-            item["created_at"] = new_ts
-            item["updated_at"] = new_ts
+            if "created_at" not in item:
+                item["created_at"] = new_ts
+            if "updated_at" not in item:
+                item["updated_at"] = new_ts
 
     # Sort all items by updated_at descending (newest first)
     merged.sort(key=lambda x: x.get("updated_at", ""), reverse=True)

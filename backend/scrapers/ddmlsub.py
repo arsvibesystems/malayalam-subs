@@ -199,6 +199,11 @@ class DdmlSubScraper(BaseScraper):
             if is_metadata_post or is_standalone_doc:
                 item = self._parse_release_text(text, post_id_num, curr_thumb, srt_filename=srt_filename)
                 
+                time_tag = m.find("time", class_="time")
+                if time_tag and time_tag.get("datetime"):
+                    item["created_at"] = time_tag["datetime"]
+                    item["updated_at"] = time_tag["datetime"]
+                
                 # If there's an attached document link, use it
                 if doc_wrap:
                     doc_link = doc_wrap.get("href", "")
