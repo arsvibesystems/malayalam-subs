@@ -8,6 +8,7 @@ def fix_dates():
     msone = [d for d in data if d['source_site'] == 'msone']
     goat = [d for d in data if d['source_site'] == 'teamgoat']
     mirror = [d for d in data if d['source_site'] == 'moviemirror']
+    ddmlsub = [d for d in data if d['source_site'] == 'ddmlsub']
 
     # Sort each list oldest to newest
     # MSone: sort by release_number
@@ -18,6 +19,9 @@ def fix_dates():
     
     # Movie Mirror: sort by current updated_at (which was assigned base_time - milliseconds, so smallest = oldest)
     mirror.sort(key=lambda x: x.get('updated_at', ''))
+
+    # DDML: sort by release_number
+    ddmlsub.sort(key=lambda x: x.get('release_number') or 0)
 
     # Assign chronological percentage
     all_items = []
@@ -32,6 +36,10 @@ def fix_dates():
         
     for i, item in enumerate(mirror):
         item['_chrono_pct'] = i / max(1, len(mirror) - 1)
+        all_items.append(item)
+
+    for i, item in enumerate(ddmlsub):
+        item['_chrono_pct'] = i / max(1, len(ddmlsub) - 1)
         all_items.append(item)
 
     # Sort all items by the percentage (0.0 to 1.0)
