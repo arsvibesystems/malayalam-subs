@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 def fix_latest_msone_posters():
     try:
-        with open('data/subtitles.json', 'r', encoding='utf-8') as f:
+        with open('../data/subtitles.json', 'r', encoding='utf-8') as f:
             db = json.load(f)
     except Exception as e:
         print(f"Error loading db: {e}")
@@ -44,7 +44,7 @@ def fix_latest_msone_posters():
                     print(f"  -> Failed to fetch {url}: {e}")
 
     if updates > 0:
-        with open('data/subtitles.json', 'w', encoding='utf-8') as f:
+        with open('../data/subtitles.json', 'w', encoding='utf-8') as f:
             json.dump(db, f, ensure_ascii=False, indent=2)
         print(f"Successfully upgraded {updates} latest MSone posters to HQ!")
     else:
