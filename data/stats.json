@@ -1,17 +1,7 @@
 {
-  "total_count": 5319,
-  "last_updated": "2026-07-29T08:17:02.722960+00:00",
+  "total_count": 5320,
+  "last_updated": "2026-07-29T13:33:47.199365+00:00",
   "per_source": {
-    "teamgoat": {
-      "total": 490,
-      "movies": 444,
-      "series": 46
-    },
-    "msone": {
-      "total": 3640,
-      "movies": 3280,
-      "series": 360
-    },
     "ddmlsub": {
       "total": 396,
       "movies": 335,
@@ -21,6 +11,16 @@
       "total": 793,
       "movies": 756,
       "series": 37
+    },
+    "teamgoat": {
+      "total": 491,
+      "movies": 445,
+      "series": 46
+    },
+    "msone": {
+      "total": 3640,
+      "movies": 3280,
+      "series": 360
     }
   },
   "filters": {
@@ -299,6 +299,7 @@
       "Mystery",
       "Political Thriller",
       "Psychological",
+      "Psychological Horror",
       "Psychological Thriller",
       "Quarentine_fest",
       "Road Movie",
