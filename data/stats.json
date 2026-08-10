@@ -1,26 +1,26 @@
 {
-  "total_count": 5333,
-  "last_updated": "2026-08-10T12:41:03.505851+00:00",
+  "total_count": 5335,
+  "last_updated": "2026-08-10T18:41:46.321212+00:00",
   "per_source": {
+    "teamgoat": {
+      "total": 494,
+      "movies": 447,
+      "series": 47
+    },
+    "msone": {
+      "total": 3644,
+      "movies": 3283,
+      "series": 361
+    },
     "ddmlsub": {
       "total": 396,
       "movies": 335,
       "series": 61
     },
     "moviemirror": {
-      "total": 800,
-      "movies": 763,
+      "total": 801,
+      "movies": 764,
       "series": 37
-    },
-    "msone": {
-      "total": 3643,
-      "movies": 3282,
-      "series": 361
-    },
-    "teamgoat": {
-      "total": 494,
-      "movies": 447,
-      "series": 47
     }
   },
   "filters": {
