@@ -1,12 +1,7 @@
 {
   "total_count": 5333,
-  "last_updated": "2026-08-09T18:23:59.805498+00:00",
+  "last_updated": "2026-08-10T00:48:19.501445+00:00",
   "per_source": {
-    "teamgoat": {
-      "total": 494,
-      "movies": 447,
-      "series": 47
-    },
     "msone": {
       "total": 3643,
       "movies": 3282,
@@ -21,6 +16,11 @@
       "total": 800,
       "movies": 763,
       "series": 37
+    },
+    "teamgoat": {
+      "total": 494,
+      "movies": 447,
+      "series": 47
     }
   },
   "filters": {
