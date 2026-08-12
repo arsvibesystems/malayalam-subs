@@ -556,9 +556,13 @@ class MSoneScraper(BaseScraper):
             slug = rss_item.get("slug", "")
             if slug and slug not in seen_slugs:
                 seen_slugs.add(slug)
-                all_items.append(rss_item)
+                
+                # Attempt to scrape the detail page to get missing metadata (poster, IMDb, release #).
+                # If it gets blocked by Cloudflare, it automatically falls back to the partial rss_item.
+                full_item = self.scrape_detail_page(rss_url)
+                all_items.append(full_item)
                 rss_added += 1
-                self.logger.info(f"  ✓ {rss_item.get('title', 'Unknown')} (from RSS)")
+                self.logger.info(f"  ✓ {full_item.get('title', 'Unknown')} (from RSS)")
                 
         if rss_added > 0:
             self.logger.info(f"Added {rss_added} items exclusively from RSS feed.")
