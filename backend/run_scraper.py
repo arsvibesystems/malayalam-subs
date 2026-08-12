@@ -123,11 +123,18 @@ def merge_results(existing: List[Dict], new_items: List[Dict]) -> List[Dict]:
             # so weak fallback scrapers (like RSS feed) never erase existing rich metadata!
             old_created = existing_map[slug].get("created_at")
             old_updated = existing_map[slug].get("updated_at")
+            old_rn = existing_map[slug].get("release_number")
+            new_rn = item.get("release_number")
+            is_new_release = False
+            if new_rn is not None:
+                if old_rn is None or int(new_rn) > int(old_rn):
+                    is_new_release = True
+
             for k, v in item.items():
                 if v is not None and v != "":
-                    # Special handling for timestamps: keep the oldest created_at!
+                    # Special handling for timestamps: keep the oldest created_at, UNLESS it's a re-release with a new release_number!
                     if k == "created_at" and old_created:
-                        if old_created < v:
+                        if old_created < v and not is_new_release:
                             continue # Keep the older creation date
                             
                     # Special handling for posters: don't overwrite high-quality website posters with low-quality Telegram ones

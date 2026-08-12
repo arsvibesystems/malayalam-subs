@@ -11,6 +11,8 @@ Site structure (from research):
 import re
 from typing import Optional, Dict, Any, List
 from bs4 import BeautifulSoup
+from email.utils import parsedate_to_datetime
+from datetime import datetime, timezone
 from .base import BaseScraper
 
 
@@ -106,10 +108,22 @@ class MSoneScraper(BaseScraper):
                             if desc_elem and desc_elem.text:
                                 desc_soup = BeautifulSoup(desc_elem.text, "html.parser")
                                 desc_text = self._clean_text(desc_soup.get_text())
+                            
+                            pub_date = item.find("pubDate")
+                            if pub_date and pub_date.text:
+                                try:
+                                    dt = parsedate_to_datetime(pub_date.text)
+                                    dt_iso = dt.isoformat()
+                                except Exception:
+                                    dt_iso = datetime.now(timezone.utc).isoformat()
+                            else:
+                                dt_iso = datetime.now(timezone.utc).isoformat()
 
                             self.rss_data[href] = {
                                 "source_site": self.SITE_KEY,
                                 "source_url": href,
+                                "created_at": dt_iso,
+                                "updated_at": dt_iso,
                                 "title": title_text,
                                 "year": self._extract_year(title_text),
                                 "thumbnail_url": "",
@@ -169,6 +183,11 @@ class MSoneScraper(BaseScraper):
                 "source_site": self.SITE_KEY,
                 "source_url": url,
             }
+            if has_fallback:
+                if "created_at" in self.rss_data[url]:
+                    data["created_at"] = self.rss_data[url]["created_at"]
+                if "updated_at" in self.rss_data[url]:
+                    data["updated_at"] = self.rss_data[url]["updated_at"]
 
             # --- Title ---
             # The page title format: "The Furious / ദ ഫ്യൂരിയസ് (2025) - എംസോൺ"
