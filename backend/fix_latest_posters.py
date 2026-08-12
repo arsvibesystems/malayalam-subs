@@ -29,7 +29,7 @@ def fix_latest_msone_posters():
                         fetch_url = f"{proxy_url.rstrip('/')}/?url={quote(url)}"
                         auth_token = os.getenv("MSONE_PROXY_AUTH_TOKEN")
                         if auth_token:
-                            headers["Authorization"] = f"Bearer {auth_token}"
+                            headers["X-Auth-Token"] = auth_token
                             
                     resp = session.get(fetch_url, headers=headers, timeout=15)
                     soup = BeautifulSoup(resp.text, 'lxml')
