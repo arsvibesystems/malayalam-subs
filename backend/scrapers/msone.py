@@ -550,7 +550,20 @@ class MSoneScraper(BaseScraper):
                     all_items.append(item)
                     self.logger.info(f"  ✓ {item.get('title', 'Unknown')} (#{item.get('release_number', 'N/A')})")
 
-        self.logger.info(f"Total scraped from {self.SITE_NAME} via Telegram: {len(all_items)} items")
+        # Add items from RSS feed that were missed by Telegram (e.g. newly published on site only)
+        rss_added = 0
+        for rss_url, rss_item in self.rss_data.items():
+            slug = rss_item.get("slug", "")
+            if slug and slug not in seen_slugs:
+                seen_slugs.add(slug)
+                all_items.append(rss_item)
+                rss_added += 1
+                self.logger.info(f"  ✓ {rss_item.get('title', 'Unknown')} (from RSS)")
+                
+        if rss_added > 0:
+            self.logger.info(f"Added {rss_added} items exclusively from RSS feed.")
+
+        self.logger.info(f"Total scraped from {self.SITE_NAME} via Telegram & RSS: {len(all_items)} items")
         return all_items
 
 
