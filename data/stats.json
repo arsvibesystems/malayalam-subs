@@ -1,15 +1,15 @@
 {
-  "total_count": 5344,
-  "last_updated": "2026-08-15T12:15:48.053536+00:00",
+  "total_count": 5345,
+  "last_updated": "2026-08-15T18:13:21.705322+00:00",
   "per_source": {
-    "msone": {
-      "total": 3649,
-      "movies": 3288,
-      "series": 361
+    "teamgoat": {
+      "total": 495,
+      "movies": 448,
+      "series": 47
     },
     "moviemirror": {
-      "total": 804,
-      "movies": 767,
+      "total": 805,
+      "movies": 768,
       "series": 37
     },
     "ddmlsub": {
@@ -17,10 +17,10 @@
       "movies": 335,
       "series": 61
     },
-    "teamgoat": {
-      "total": 495,
-      "movies": 448,
-      "series": 47
+    "msone": {
+      "total": 3649,
+      "movies": 3288,
+      "series": 361
     }
   },
   "filters": {
@@ -368,6 +368,7 @@
       "ഫിക്ഷൻ",
       "ഫിലിം നോയർ",
       "ഫീൽ",
+      "ബയോഗ്രാഫി",
       "ബയോഗ്രാഫി & ഡ്രാമ",
       "ബയോപിക്ക്",
       "ഭാഷയിൽ…",
