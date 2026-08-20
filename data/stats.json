@@ -1,26 +1,26 @@
 {
-  "total_count": 5349,
-  "last_updated": "2026-08-20T06:26:04.312605+00:00",
+  "total_count": 5350,
+  "last_updated": "2026-08-20T12:23:44.416976+00:00",
   "per_source": {
+    "ddmlsub": {
+      "total": 396,
+      "movies": 335,
+      "series": 61
+    },
     "teamgoat": {
       "total": 496,
       "movies": 449,
       "series": 47
     },
+    "moviemirror": {
+      "total": 807,
+      "movies": 770,
+      "series": 37
+    },
     "msone": {
       "total": 3651,
       "movies": 3290,
       "series": 361
-    },
-    "moviemirror": {
-      "total": 806,
-      "movies": 769,
-      "series": 37
-    },
-    "ddmlsub": {
-      "total": 396,
-      "movies": 335,
-      "series": 61
     }
   },
   "filters": {
@@ -385,6 +385,7 @@
       "സയൻസ്",
       "സയൻസ് ഫിക്ഷൻ",
       "സീരിസ്",
+      "സൈ - ഫി",
       "സൈക്കോളജിക്കൽ",
       "സ്പോർട്ട്",
       "സ്പോർട്സ്",
