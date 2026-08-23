@@ -1,11 +1,16 @@
 {
-  "total_count": 5352,
-  "last_updated": "2026-08-23T00:35:56.769093+00:00",
+  "total_count": 5354,
+  "last_updated": "2026-08-23T06:22:25.475263+00:00",
   "per_source": {
     "teamgoat": {
       "total": 497,
       "movies": 450,
       "series": 47
+    },
+    "msone": {
+      "total": 3653,
+      "movies": 3293,
+      "series": 360
     },
     "ddmlsub": {
       "total": 396,
@@ -13,14 +18,9 @@
       "series": 61
     },
     "moviemirror": {
-      "total": 807,
-      "movies": 770,
+      "total": 808,
+      "movies": 771,
       "series": 37
-    },
-    "msone": {
-      "total": 3652,
-      "movies": 3291,
-      "series": 361
     }
   },
   "filters": {
@@ -405,6 +405,7 @@
       "Maajith Nazar",
       "Prashobh Pc",
       "Rashid Ahammed",
+      "Sajay Kupleri",
       "Shamil AT",
       "TEAM GOAT",
       "Vishnu Prasad",
