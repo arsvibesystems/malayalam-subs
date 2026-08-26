@@ -1,16 +1,16 @@
 {
-  "total_count": 5357,
-  "last_updated": "2026-08-26T00:41:49.464738+00:00",
+  "total_count": 5359,
+  "last_updated": "2026-08-26T06:28:07.232613+00:00",
   "per_source": {
+    "moviemirror": {
+      "total": 811,
+      "movies": 774,
+      "series": 37
+    },
     "ddmlsub": {
       "total": 396,
       "movies": 335,
       "series": 61
-    },
-    "moviemirror": {
-      "total": 810,
-      "movies": 773,
-      "series": 37
     },
     "msone": {
       "total": 3654,
@@ -18,8 +18,8 @@
       "series": 362
     },
     "teamgoat": {
-      "total": 497,
-      "movies": 450,
+      "total": 498,
+      "movies": 451,
       "series": 47
     }
   },
@@ -348,6 +348,7 @@
       "sport",
       "thriller",
       "war",
+      "അഡ്വഞ്ചർ",
       "അഡ്വെഞ്ചർ",
       "അഡ്‌വെഞ്ചർ",
       "അനിമേഷൻ",
@@ -398,6 +399,7 @@
       ", ഫസീഹ് അബുബക്കർ, നിതിൻ വി ജി, ഷജീഫ് സലാം, മിഥുൻ സുരേന്ദ്രൻ, ലിജോ എം.ജെ , ദ്രുതഗർഷ്യവ കേശവ്, അഖിൽ ഷാജി, മുഹമ്മദ്‌ സൽമാൻ റഫീഖ് പി, മൂസാ കലിം",
       "Aashkar Hyder",
       "Aravind Kumar",
+      "Arun BS",
       "Asif Asi",
       "DEEKEY",
       "Elvin John Paul",
