@@ -1,25 +1,25 @@
 {
-  "total_count": 5363,
-  "last_updated": "2026-08-28T01:52:33.583456+00:00",
+  "total_count": 5365,
+  "last_updated": "2026-08-28T17:49:54.587460+00:00",
   "per_source": {
     "msone": {
-      "total": 3655,
-      "movies": 3293,
+      "total": 3656,
+      "movies": 3294,
       "series": 362
-    },
-    "ddmlsub": {
-      "total": 396,
-      "movies": 335,
-      "series": 61
     },
     "teamgoat": {
       "total": 498,
       "movies": 451,
       "series": 47
     },
+    "ddmlsub": {
+      "total": 396,
+      "movies": 335,
+      "series": 61
+    },
     "moviemirror": {
-      "total": 814,
-      "movies": 777,
+      "total": 815,
+      "movies": 778,
       "series": 37
     }
   },
@@ -604,6 +604,7 @@
       "ആഷിഖ് മജീദ്",
       "ആസിഫ് ആസി",
       "ആർ. മുരളീധരൻ",
+      "ആർജ്ജുൻ ദാസ്",
       "ആൽബിൻ",
       "ആൽവിൻ ക്രിസ് ആന്റണി",
       "ഇമ്മാനുവൽ ബൈജു",
