@@ -1,26 +1,26 @@
 {
-  "total_count": 5365,
-  "last_updated": "2026-08-29T01:16:38.889891+00:00",
+  "total_count": 5366,
+  "last_updated": "2026-08-29T11:53:43.376785+00:00",
   "per_source": {
-    "msone": {
-      "total": 3656,
-      "movies": 3294,
-      "series": 362
-    },
-    "ddmlsub": {
-      "total": 396,
-      "movies": 335,
-      "series": 61
-    },
     "moviemirror": {
       "total": 815,
       "movies": 778,
       "series": 37
     },
+    "msone": {
+      "total": 3656,
+      "movies": 3294,
+      "series": 362
+    },
     "teamgoat": {
-      "total": 498,
-      "movies": 451,
+      "total": 499,
+      "movies": 452,
       "series": 47
+    },
+    "ddmlsub": {
+      "total": 396,
+      "movies": 335,
+      "series": 61
     }
   },
   "filters": {
@@ -288,6 +288,7 @@
       "Family",
       "Fantasy",
       "Feelgood",
+      "Film-Noir",
       "GOOSEBUMPS",
       "Gangster",
       "HORROR",
