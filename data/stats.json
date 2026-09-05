@@ -1,26 +1,26 @@
 {
-  "total_count": 5377,
-  "last_updated": "2026-09-05T09:35:16.507025+00:00",
+  "total_count": 5378,
+  "last_updated": "2026-09-05T14:07:38.508009+00:00",
   "per_source": {
     "ddmlsub": {
       "total": 396,
       "movies": 335,
       "series": 61
     },
-    "teamgoat": {
-      "total": 501,
-      "movies": 453,
-      "series": 48
+    "moviemirror": {
+      "total": 821,
+      "movies": 784,
+      "series": 37
     },
     "msone": {
       "total": 3660,
       "movies": 3298,
       "series": 362
     },
-    "moviemirror": {
-      "total": 820,
-      "movies": 783,
-      "series": 37
+    "teamgoat": {
+      "total": 501,
+      "movies": 453,
+      "series": 48
     }
   },
   "filters": {
@@ -393,6 +393,7 @@
       "സൈ - ഫി",
       "സൈ - ഫിക്",
       "സൈക്കോളജിക്കൽ",
+      "സൈക്കോളജിക്കൽ ഹൊറർ",
       "സ്പോർട്ട്",
       "സ്പോർട്സ്",
       "സ്ലാപ്സ്റ്റിക്ക് കോമഡി",
