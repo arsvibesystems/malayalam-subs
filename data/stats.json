@@ -1,6 +1,6 @@
 {
-  "total_count": 5387,
-  "last_updated": "2026-09-12T08:09:58.371434+00:00",
+  "total_count": 5388,
+  "last_updated": "2026-09-12T09:43:56.576284+00:00",
   "per_source": {
     "msone": {
       "total": 3664,
@@ -12,15 +12,15 @@
       "movies": 788,
       "series": 37
     },
+    "teamgoat": {
+      "total": 503,
+      "movies": 455,
+      "series": 48
+    },
     "ddmlsub": {
       "total": 396,
       "movies": 335,
       "series": 61
-    },
-    "teamgoat": {
-      "total": 502,
-      "movies": 454,
-      "series": 48
     }
   },
   "filters": {
@@ -408,6 +408,7 @@
       ", ഫസീഹ് അബുബക്കർ, നിതിൻ വി ജി, ഷജീഫ് സലാം, മിഥുൻ സുരേന്ദ്രൻ, ലിജോ എം.ജെ , ദ്രുതഗർഷ്യവ കേശവ്, അഖിൽ ഷാജി, മുഹമ്മദ്‌ സൽമാൻ റഫീഖ് പി, മൂസാ കലിം",
       "Aashkar Hyder",
       "Aravind Kumar",
+      "Arun BS",
       "Asif Asi",
       "DEEKEY",
       "Elvin John Paul",
@@ -415,6 +416,7 @@
       "Maajith Nazar",
       "Prashobh Pc",
       "Rashid Ahammed",
+      "Sajay Kupleri",
       "TEAM GOAT",
       "Vishnu Prasad",
       "അക്ഷയ് ആനന്ദ്",
