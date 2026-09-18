@@ -186,7 +186,7 @@ class DdmlSubScraper(BaseScraper):
             
             # Check if this message is a structural release metadata post
             is_metadata_post = False
-            if text and any(k in text for k in ['ഭാഷ', 'സംവിധാനം', 'പരിഭാഷ', 'ജോണർ', 'IMDb', 'റിലീസ്']):
+            if text and re.search(r'dd\s*മലയാളം\s*(?:റീലിസ്|റിലീസ്)', text, re.IGNORECASE):
                 is_metadata_post = True
             
             # Check if this message is a standalone document (like an episode .srt)
@@ -198,6 +198,10 @@ class DdmlSubScraper(BaseScraper):
 
             if is_metadata_post or is_standalone_doc:
                 item = self._parse_release_text(text, post_id_num, curr_thumb, srt_filename=srt_filename)
+                
+                if item.get("title") == "Unknown":
+                    self.logger.debug(f"Skipping post {post_id_num} because title could not be parsed.")
+                    continue
                 
                 time_tag = m.find("time", class_="time")
                 if time_tag and time_tag.get("datetime"):
