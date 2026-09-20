@@ -12,7 +12,7 @@ def fix_posters():
     api_key = '15d2ea6d0dc1d476efbca3eba2b9bbfb'
 
     for d in db:
-        if not d.get('thumbnail_url') and d.get('title') and d['title'] != 'Unknown':
+        if (not d.get('thumbnail_url') or 'telesco.pe' in d.get('thumbnail_url', '')) and d.get('title') and d['title'] != 'Unknown':
             # Clean title for TMDB (remove Malayalam part and brackets)
             q = d['title'].split(' / ')[0].split('–')[0].strip()
             # Also remove parenthetical years from query string if present
@@ -30,10 +30,16 @@ def fix_posters():
                 
                 if data.get('results') and data['results'][0].get('poster_path'):
                     d['thumbnail_url'] = 'https://image.tmdb.org/t/p/w500' + data['results'][0]['poster_path']
-                    print(f"Fixed poster for: {d['title']}")
+                    try:
+                        print(f"Fixed poster for: {q}")
+                    except:
+                        pass
                     updates += 1
             except Exception as e:
-                print(f"Failed TMDB for {q}: {e}")
+                try:
+                    print(f"Failed TMDB for {q}: {e}")
+                except:
+                    pass
             
             time.sleep(0.1) # Be nice to TMDB API
 
