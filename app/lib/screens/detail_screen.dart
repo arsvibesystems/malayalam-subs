@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:android_intent_plus/android_intent.dart';
 import '../models/subtitle.dart';
 import '../theme/app_theme.dart';
+import '../services/cinemata_service.dart';
 
 class DetailScreen extends StatelessWidget {
   final Subtitle subtitle;
@@ -334,6 +337,8 @@ class DetailScreen extends StatelessWidget {
                   ],
 
                   // Action buttons
+                  _buildWatchMovieButton(context),
+                  const SizedBox(height: 12),
                   _buildDownloadButton(context),
                   const SizedBox(height: 12),
                   _buildSecondaryButton(
@@ -452,6 +457,38 @@ class DetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildWatchMovieButton(BuildContext context) {
+    final ValueNotifier<bool> isLoading = ValueNotifier(false);
+    return ValueListenableBuilder<bool>(
+      valueListenable: isLoading,
+      builder: (context, loading, child) {
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: loading ? null : () => _handleWatchMovie(context, isLoading),
+            icon: loading 
+                ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                : const Icon(Icons.play_circle_fill_rounded, size: 22),
+            label: Text(
+              loading ? 'Loading...' : 'Watch Movie',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accentTeal,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 4,
+              shadowColor: AppTheme.accentTeal.withValues(alpha: 0.4),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildSecondaryButton(String label, IconData icon, VoidCallback onTap) {
     return SizedBox(
       width: double.infinity,
@@ -506,6 +543,72 @@ class DetailScreen extends StatelessWidget {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _handleWatchMovie(BuildContext context, ValueNotifier<bool> loading) async {
+    loading.value = true;
+    try {
+      // Clean up title: remove trailing year like (2023) or [2023] and Malayalam text
+      String cleanTitle = subtitle.shortTitle.replaceAll(RegExp(r'\s*[\(\[]\d{4}[\)\]]\s*'), '').trim();
+      cleanTitle = cleanTitle.replaceAll(RegExp(r'[\u0D00-\u0D7F]+'), '').trim();
+      
+      final imdbId = await CinemataService.searchImdbId(cleanTitle, type: subtitle.releaseType);
+      
+      if (!context.mounted) return;
+      
+      if (imdbId != null && imdbId.isNotEmpty) {
+        final nuvioUrl = 'nuvio:///detail/${subtitle.releaseType}/$imdbId/$imdbId';
+        final stremioUrl = 'stremio:///detail/${subtitle.releaseType}/$imdbId/$imdbId';
+        
+        if (Platform.isAndroid) {
+          final nuvioIntent = AndroidIntent(action: 'action_view', data: nuvioUrl);
+          bool canLaunchNuvio = await nuvioIntent.canResolveActivity() ?? false;
+          if (canLaunchNuvio) {
+            await nuvioIntent.launch();
+            return;
+          }
+          
+          final stremioIntent = AndroidIntent(action: 'action_view', data: stremioUrl);
+          bool canLaunchStremio = await stremioIntent.canResolveActivity() ?? false;
+          if (canLaunchStremio) {
+            await stremioIntent.launch();
+            return;
+          }
+        } else {
+          // iOS fallback
+          if (await canLaunchUrl(Uri.parse(nuvioUrl))) {
+            await launchUrl(Uri.parse(nuvioUrl), mode: LaunchMode.externalApplication);
+            return;
+          }
+          if (await canLaunchUrl(Uri.parse(stremioUrl))) {
+            await launchUrl(Uri.parse(stremioUrl), mode: LaunchMode.externalApplication);
+            return;
+          }
+        }
+        
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Nuvio or Stremio is not installed.'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            backgroundColor: AppTheme.bgCard,
+          ),
+        );
+      } else {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Could not find movie ID on Cinemeta.'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            backgroundColor: AppTheme.bgCard,
+          ),
+        );
+      }
+    } finally {
+      loading.value = false;
     }
   }
 
