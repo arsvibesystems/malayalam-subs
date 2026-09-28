@@ -1,21 +1,21 @@
 {
-  "total_count": 5394,
-  "last_updated": "2026-09-28T02:47:29.756636+00:00",
+  "total_count": 5395,
+  "last_updated": "2026-09-28T12:32:47.466589+00:00",
   "per_source": {
-    "ddmlsub": {
-      "total": 384,
-      "movies": 313,
-      "series": 71
+    "msone": {
+      "total": 3669,
+      "movies": 3306,
+      "series": 363
     },
     "teamgoat": {
       "total": 506,
       "movies": 458,
       "series": 48
     },
-    "msone": {
-      "total": 3668,
-      "movies": 3305,
-      "series": 363
+    "ddmlsub": {
+      "total": 384,
+      "movies": 313,
+      "series": 71
     },
     "moviemirror": {
       "total": 836,
@@ -404,6 +404,7 @@
       ", ഫസീഹ് അബുബക്കർ, നിതിൻ വി ജി, ഷജീഫ് സലാം, മിഥുൻ സുരേന്ദ്രൻ, ലിജോ എം.ജെ , ദ്രുതഗർഷ്യവ കേശവ്, അഖിൽ ഷാജി, മുഹമ്മദ്‌ സൽമാൻ റഫീഖ് പി, മൂസാ കലിം",
       "Aashkar Hyder",
       "Aravind Kumar",
+      "Arun BS",
       "Asif Asi",
       "DD",
       "DEEKEY",
