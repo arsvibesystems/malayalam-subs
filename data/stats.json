@@ -1,6 +1,6 @@
 {
-  "total_count": 5404,
-  "last_updated": "2026-10-05T03:13:33.436398+00:00",
+  "total_count": 5405,
+  "last_updated": "2026-10-05T13:12:44.999413+00:00",
   "per_source": {
     "ddmlsub": {
       "total": 384,
@@ -8,8 +8,8 @@
       "series": 71
     },
     "msone": {
-      "total": 3672,
-      "movies": 3309,
+      "total": 3673,
+      "movies": 3310,
       "series": 363
     },
     "teamgoat": {
@@ -415,6 +415,7 @@
       "Maajith Nazar",
       "Mubarak TN",
       "Prashobh Pc",
+      "Praveen Adoor",
       "Rashid Ahammed",
       "Sajay Kupleri",
       "TEAM GOAT",
