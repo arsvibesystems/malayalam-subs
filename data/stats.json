@@ -1,26 +1,26 @@
 {
-  "total_count": 5424,
-  "last_updated": "2026-10-18T10:11:09.086079+00:00",
+  "total_count": 5425,
+  "last_updated": "2026-10-18T15:19:58.548449+00:00",
   "per_source": {
     "msone": {
       "total": 3679,
       "movies": 3316,
       "series": 363
     },
-    "ddmlsub": {
-      "total": 384,
-      "movies": 313,
-      "series": 71
+    "teamgoat": {
+      "total": 513,
+      "movies": 465,
+      "series": 48
     },
     "moviemirror": {
       "total": 849,
       "movies": 810,
       "series": 39
     },
-    "teamgoat": {
-      "total": 512,
-      "movies": 464,
-      "series": 48
+    "ddmlsub": {
+      "total": 384,
+      "movies": 313,
+      "series": 71
     }
   },
   "filters": {
@@ -403,6 +403,7 @@
       "സ്ലാഷർ",
       "സർവൈവൽ",
       "ഹിസ്റ്ററി",
+      "ഹിസ്റ്റോറിക്കൽ",
       "ഹൊറർ"
     ],
     "translators": [
