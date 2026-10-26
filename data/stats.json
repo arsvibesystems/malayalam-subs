@@ -1,12 +1,7 @@
 {
-  "total_count": 5435,
-  "last_updated": "2026-10-26T02:34:53.159841+00:00",
+  "total_count": 5436,
+  "last_updated": "2026-10-26T12:04:07.830296+00:00",
   "per_source": {
-    "teamgoat": {
-      "total": 514,
-      "movies": 466,
-      "series": 48
-    },
     "msone": {
       "total": 3683,
       "movies": 3319,
@@ -16,6 +11,11 @@
       "total": 384,
       "movies": 313,
       "series": 71
+    },
+    "teamgoat": {
+      "total": 515,
+      "movies": 467,
+      "series": 48
     },
     "moviemirror": {
       "total": 854,
@@ -425,6 +425,7 @@
       "Rashid Ahammed",
       "Sajay Kupleri",
       "TEAM GOAT",
+      "Vishal Raveendran",
       "Vishnu Prasad",
       "Vishnu Shaji",
       "അക്ഷയ് ആനന്ദ്",
