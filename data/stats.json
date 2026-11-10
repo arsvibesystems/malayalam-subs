@@ -1,16 +1,16 @@
 {
-  "total_count": 5467,
-  "last_updated": "2026-11-09T14:40:08.246274+00:00",
+  "total_count": 5468,
+  "last_updated": "2026-11-10T01:27:11.312528+00:00",
   "per_source": {
-    "teamgoat": {
-      "total": 525,
-      "movies": 476,
-      "series": 49
-    },
     "msone": {
       "total": 3694,
       "movies": 3330,
       "series": 364
+    },
+    "teamgoat": {
+      "total": 525,
+      "movies": 476,
+      "series": 49
     },
     "ddmlsub": {
       "total": 384,
@@ -18,8 +18,8 @@
       "series": 71
     },
     "moviemirror": {
-      "total": 864,
-      "movies": 825,
+      "total": 865,
+      "movies": 826,
       "series": 39
     }
   },
@@ -200,6 +200,7 @@
       "മുജീബ്",
       "മുബാറക്ക്‌",
       "മൂറെ",
+      "മൻഡാറിൻ",
       "യാകുട്",
       "യുവരാജ്",
       "റഷ്യൻ",
