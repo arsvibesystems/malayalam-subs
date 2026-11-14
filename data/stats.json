@@ -1,16 +1,11 @@
 {
   "total_count": 5474,
-  "last_updated": "2026-11-14T13:06:21.824489+00:00",
+  "last_updated": "2026-11-14T21:51:44.142108+00:00",
   "per_source": {
     "moviemirror": {
       "total": 867,
       "movies": 828,
       "series": 39
-    },
-    "ddmlsub": {
-      "total": 384,
-      "movies": 313,
-      "series": 71
     },
     "msone": {
       "total": 3696,
@@ -21,6 +16,11 @@
       "total": 527,
       "movies": 478,
       "series": 49
+    },
+    "ddmlsub": {
+      "total": 384,
+      "movies": 313,
+      "series": 71
     }
   },
   "filters": {
