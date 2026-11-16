@@ -1,16 +1,11 @@
 {
-  "total_count": 5475,
-  "last_updated": "2026-11-16T03:34:17.546891+00:00",
+  "total_count": 5477,
+  "last_updated": "2026-11-16T14:14:14.675610+00:00",
   "per_source": {
     "msone": {
-      "total": 3697,
-      "movies": 3333,
+      "total": 3698,
+      "movies": 3334,
       "series": 364
-    },
-    "teamgoat": {
-      "total": 527,
-      "movies": 478,
-      "series": 49
     },
     "moviemirror": {
       "total": 867,
@@ -21,6 +16,11 @@
       "total": 384,
       "movies": 313,
       "series": 71
+    },
+    "teamgoat": {
+      "total": 528,
+      "movies": 479,
+      "series": 49
     }
   },
   "filters": {
@@ -418,6 +418,7 @@
       "DD",
       "DEEKEY",
       "DK",
+      "Dr Amjed Khan PP",
       "Elvin John Paul",
       "Finnish",
       "Linguistic team international - Malayalam team",
@@ -742,7 +743,6 @@
       "ഡെന്നി ഡോമിനിക്",
       "ഡെന്നിസ് ബേബി",
       "ഡെന്നീസ് ബേബി.",
-      "ഡോ. അംജദ് ഖാൻ പി.പി",
       "ഡോ. ആശ കൃഷ്ണകുമാർ",
       "ഡോ. ഓംനാഥ്, അനന്തു ഏ ആർ, മനോജ് കുന്നത്ത്, യൂ എ ബക്കർ പട്ടാമ്പി, സഫീർ അലി",
       "ഡോ. ഓംനാഥ്, മനോജ്‌ കുന്നത്ത്, പ്രവീൺ കുറുപ്പ്, യൂ എ ബക്കർ പട്ടാമ്പി, സഫീർ അലി",
