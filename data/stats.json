@@ -1,6 +1,6 @@
 {
-  "total_count": 5483,
-  "last_updated": "2026-11-25T01:47:33.978239+00:00",
+  "total_count": 5485,
+  "last_updated": "2026-11-25T16:25:41.270897+00:00",
   "per_source": {
     "moviemirror": {
       "total": 867,
@@ -8,19 +8,19 @@
       "series": 39
     },
     "teamgoat": {
-      "total": 530,
-      "movies": 481,
+      "total": 531,
+      "movies": 482,
       "series": 49
-    },
-    "msone": {
-      "total": 3702,
-      "movies": 3338,
-      "series": 364
     },
     "ddmlsub": {
       "total": 384,
       "movies": 313,
       "series": 71
+    },
+    "msone": {
+      "total": 3703,
+      "movies": 3339,
+      "series": 364
     }
   },
   "filters": {
@@ -429,6 +429,7 @@
       "Praveen Adoor",
       "Rashid Ahammed",
       "Sajay Kupleri",
+      "Shanu Nujumudeen",
       "TEAM GOAT",
       "Vishal Raveendran",
       "Vishnu M Krishnan",
