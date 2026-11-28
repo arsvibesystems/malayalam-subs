@@ -1,17 +1,7 @@
 {
-  "total_count": 5498,
-  "last_updated": "2026-11-28T11:10:56.855980+00:00",
+  "total_count": 5500,
+  "last_updated": "2026-11-28T15:14:11.801042+00:00",
   "per_source": {
-    "msone": {
-      "total": 3716,
-      "movies": 3352,
-      "series": 364
-    },
-    "moviemirror": {
-      "total": 867,
-      "movies": 828,
-      "series": 39
-    },
     "ddmlsub": {
       "total": 384,
       "movies": 313,
@@ -21,6 +11,16 @@
       "total": 531,
       "movies": 482,
       "series": 49
+    },
+    "moviemirror": {
+      "total": 868,
+      "movies": 829,
+      "series": 39
+    },
+    "msone": {
+      "total": 3717,
+      "movies": 3353,
+      "series": 364
     }
   },
   "filters": {
@@ -277,6 +277,7 @@
       "Fantasy",
       "Feelgood",
       "Film-Noir",
+      "GEM",
       "GOOSEBUMPS",
       "Gangster",
       "Grotesque",
@@ -285,17 +286,20 @@
       "Historical_movie",
       "History",
       "Horror",
+      "Indian",
       "K-Drama",
       "Katheyondu_Shuruvagide",
       "Khaleja",
       "Let_me_eat_Your_pancreas",
       "Martial Arts",
       "Melodrama",
+      "Mini Series",
       "Movies",
       "Mr",
       "Musical",
       "My_Tomorrow_Your_Yesterday",
       "Mystery",
+      "Oscar",
       "Peninsula",
       "Political Thriller",
       "Psychological",
@@ -318,6 +322,7 @@
       "Slasher",
       "Snuff",
       "Sport",
+      "Sports",
       "Spy",
       "Superhero",
       "Supernatural Horror",
@@ -435,6 +440,7 @@
       "Rashid Ahammed",
       "Sajay Kupleri",
       "Shanu Nujumudeen",
+      "Sreedhar",
       "TEAM GOAT",
       "Vishal Raveendran",
       "Vishnu M Krishnan",
@@ -749,6 +755,7 @@
       "ഡെന്നി ഡോമിനിക്",
       "ഡെന്നിസ് ബേബി",
       "ഡെന്നീസ് ബേബി.",
+      "ഡോ. അംജദ് ഖാൻ പി.പി",
       "ഡോ. ആശ കൃഷ്ണകുമാർ",
       "ഡോ. ഓംനാഥ്, അനന്തു ഏ ആർ, മനോജ് കുന്നത്ത്, യൂ എ ബക്കർ പട്ടാമ്പി, സഫീർ അലി",
       "ഡോ. ഓംനാഥ്, മനോജ്‌ കുന്നത്ത്, പ്രവീൺ കുറുപ്പ്, യൂ എ ബക്കർ പട്ടാമ്പി, സഫീർ അലി",
