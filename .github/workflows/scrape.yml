@@ -53,6 +53,9 @@ jobs:
           # Automatically upgrade any blurry Telegram posters to HQ WordPress posters
           python fix_latest_posters.py
           
+          # Enrich posters, IMDb IDs, ratings, Movie Mirror genres, and new releases from Stremio addons
+          python enrich_from_addons.py --pages 3
+          
           # Automatically recalculate chronological interleaving for all sources
           python fix_interleaving.py
 

@@ -11,11 +11,13 @@ import 'detail_screen.dart';
 class CategoryScreen extends StatefulWidget {
   final String title;
   final String? releaseTypeFilter;
+  final List<String>? genreAnyFilter;
 
   const CategoryScreen({
     super.key,
     required this.title,
     this.releaseTypeFilter,
+    this.genreAnyFilter,
   });
 
   @override
@@ -67,6 +69,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   List<Subtitle> items = List.from(provider.allSubtitles);
                   if (widget.releaseTypeFilter != null) {
                     items = items.where((s) => s.releaseType == widget.releaseTypeFilter).toList();
+                  }
+                  if (widget.genreAnyFilter != null && widget.genreAnyFilter!.isNotEmpty) {
+                    items = items.where((s) {
+                      final lowerGenres = s.genres.toLowerCase();
+                      return widget.genreAnyFilter!.any(
+                        (g) => lowerGenres.contains(g.toLowerCase()),
+                      );
+                    }).toList();
                   }
 
                   // Explicitly sort by latest releases

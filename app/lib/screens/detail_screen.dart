@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:android_intent_plus/android_intent.dart';
 import '../models/subtitle.dart';
 import '../theme/app_theme.dart';
+import '../services/addon_service.dart';
 import '../services/cinemata_service.dart';
+import '../widgets/poster_image.dart';
 
 class DetailScreen extends StatelessWidget {
   final Subtitle subtitle;
@@ -40,13 +41,12 @@ class DetailScreen extends StatelessWidget {
                 children: [
                   Hero(
                     tag: 'poster_${subtitle.slug}',
-                    child: CachedNetworkImage(
-                      imageUrl: subtitle.thumbnailUrl,
-                      fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) => Container(
-                        color: AppTheme.bgCardLight,
-                        child: const Icon(Icons.movie_outlined, size: 80, color: AppTheme.textMuted),
-                      ),
+                    child: PosterImage(
+                      imageUrl: subtitle.effectiveBackdropUrl,
+                      imdbId: subtitle.imdbId,
+                      isBackdrop: true,
+                      errorIconSize: 80,
+                      showShimmer: false,
                     ),
                   ),
                   // Gradient overlay
@@ -434,26 +434,38 @@ class DetailScreen extends StatelessWidget {
   }
 
   Widget _buildDownloadButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () => _handleDownload(context),
-        icon: const Icon(Icons.download_rounded, size: 22),
-        label: const Text(
-          'Download Subtitle',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.accent,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    final ValueNotifier<bool> isLoading = ValueNotifier(false);
+    return ValueListenableBuilder<bool>(
+      valueListenable: isLoading,
+      builder: (context, loading, child) {
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: loading ? null : () => _handleDownload(context, isLoading),
+            icon: loading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  )
+                : const Icon(Icons.download_rounded, size: 22),
+            label: Text(
+              loading ? 'Fetching Subtitle...' : 'Download Subtitle',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accent,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 4,
+              shadowColor: AppTheme.accent.withValues(alpha: 0.4),
+            ),
           ),
-          elevation: 4,
-          shadowColor: AppTheme.accent.withValues(alpha: 0.4),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -508,7 +520,207 @@ class DetailScreen extends StatelessWidget {
     );
   }
 
-  void _handleDownload(BuildContext context) async {
+  Future<void> _handleDownload(BuildContext context, ValueNotifier<bool> loading) async {
+    if (subtitle.hasImdbId &&
+        AddonService.baseUrlForSource(subtitle.sourceSite) != null) {
+      int season = 1;
+      int episode = 1;
+
+      if (subtitle.releaseType == 'series') {
+        final selection = await _promptSeasonEpisode(context);
+        if (selection == null) return; // Cancelled
+        if (selection.$1 == -1) {
+          if (context.mounted) await _fallbackWebsiteDownload(context);
+          return;
+        }
+        season = selection.$1;
+        episode = selection.$2;
+      }
+
+      loading.value = true;
+      try {
+        final options = await AddonService.fetchSubtitles(
+          sourceSite: subtitle.sourceSite,
+          imdbId: subtitle.imdbId,
+          releaseType: subtitle.releaseType,
+          season: season,
+          episode: episode,
+        );
+
+        if (!context.mounted) return;
+
+        if (options.length == 1) {
+          await _launchUrl(options.first.url);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Downloading ${options.first.label}...'),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                backgroundColor: AppTheme.bgCard,
+              ),
+            );
+          }
+          return;
+        }
+
+        if (options.length > 1) {
+          await _showSubtitlePickerSheet(context, options);
+          return;
+        }
+      } finally {
+        loading.value = false;
+      }
+    }
+
+    if (context.mounted) {
+      await _fallbackWebsiteDownload(context);
+    }
+  }
+
+  Future<(int, int)?> _promptSeasonEpisode(BuildContext context) {
+    int season = 1;
+    int episode = 1;
+    return showDialog<(int, int)>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: AppTheme.bgCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: const Text(
+            'Select Episode',
+            style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w700),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildCounterRow('Season', season, (val) {
+                setDialogState(() => season = val);
+              }),
+              const SizedBox(height: 12),
+              _buildCounterRow('Episode', episode, (val) {
+                setDialogState(() => episode = val);
+              }),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, (-1, -1)),
+              child: const Text('Website', style: TextStyle(color: AppTheme.textSecondary)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, null),
+              child: const Text('Cancel', style: TextStyle(color: AppTheme.textMuted)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, (season, episode)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accent,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Get .srt'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCounterRow(String label, int value, ValueChanged<int> onChanged) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+        Row(
+          children: [
+            IconButton(
+              onPressed: value > 1 ? () => onChanged(value - 1) : null,
+              icon: const Icon(Icons.remove_circle_outline_rounded, color: AppTheme.accent),
+            ),
+            SizedBox(
+              width: 32,
+              child: Text(
+                '$value',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+            ),
+            IconButton(
+              onPressed: () => onChanged(value + 1),
+              icon: const Icon(Icons.add_circle_outline_rounded, color: AppTheme.accent),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showSubtitlePickerSheet(
+    BuildContext context,
+    List<AddonSubtitleOption> options,
+  ) {
+    return showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.bgCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Choose Subtitle File',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ...options.map(
+                (opt) => ListTile(
+                  leading: const Icon(Icons.subtitles_rounded, color: AppTheme.accent),
+                  title: Text(
+                    opt.label,
+                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                  ),
+                  subtitle: opt.lang.isNotEmpty && opt.lang != opt.label
+                      ? Text(opt.lang, style: const TextStyle(color: AppTheme.textMuted, fontSize: 12))
+                      : null,
+                  trailing: const Icon(Icons.download_rounded, color: AppTheme.accentTeal),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _launchUrl(opt.url);
+                  },
+                ),
+              ),
+              const Divider(color: AppTheme.dividerColor),
+              ListTile(
+                leading: const Icon(Icons.open_in_new_rounded, color: AppTheme.textSecondary),
+                title: const Text(
+                  'Open Website Download Instead',
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _fallbackWebsiteDownload(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _fallbackWebsiteDownload(BuildContext context) async {
     final url = subtitle.downloadUrl.isNotEmpty ? subtitle.downloadUrl : subtitle.sourceUrl;
     final uri = Uri.parse(url);
 
@@ -532,7 +744,7 @@ class DetailScreen extends StatelessWidget {
       }
     } else {
       // Redirect to the website page for download (e.g., msone)
-      _launchUrl(url);
+      await _launchUrl(url);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -549,11 +761,13 @@ class DetailScreen extends StatelessWidget {
   Future<void> _handleWatchMovie(BuildContext context, ValueNotifier<bool> loading) async {
     loading.value = true;
     try {
-      // Clean up title: remove trailing year like (2023) or [2023] and Malayalam text
-      String cleanTitle = subtitle.shortTitle.replaceAll(RegExp(r'\s*[\(\[]\d{4}[\)\]]\s*'), '').trim();
-      cleanTitle = cleanTitle.replaceAll(RegExp(r'[\u0D00-\u0D7F]+'), '').trim();
-      
-      final imdbId = await CinemataService.searchImdbId(cleanTitle, type: subtitle.releaseType);
+      String? imdbId = subtitle.hasImdbId ? subtitle.imdbId : null;
+      if (imdbId == null) {
+        // Clean up title: remove trailing year like (2023) or [2023] and Malayalam text
+        String cleanTitle = subtitle.shortTitle.replaceAll(RegExp(r'\s*[\(\[]\d{4}[\)\]]\s*'), '').trim();
+        cleanTitle = cleanTitle.replaceAll(RegExp(r'[\u0D00-\u0D7F]+'), '').trim();
+        imdbId = await CinemataService.searchImdbId(cleanTitle, type: subtitle.releaseType);
+      }
       
       if (!context.mounted) return;
       

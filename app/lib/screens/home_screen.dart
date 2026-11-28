@@ -334,6 +334,23 @@ class HomeScreen extends StatelessWidget {
             .where((s) => s.releaseType == 'series')
             .take(15)
             .toList();
+    // Top 15 K-Dramas
+    final kdramas =
+        provider.allSubtitles
+            .where((s) => s.genres.toLowerCase().contains('k-drama'))
+            .take(15)
+            .toList();
+    // Top 15 Festivals & Picks
+    const festivalTags = ['iffk', 'oscar', 'gem', 'ഫെസ്റ്റ്'];
+    final festivals =
+        provider.allSubtitles
+            .where(
+              (s) => festivalTags.any(
+                (t) => s.genres.toLowerCase().contains(t),
+              ),
+            )
+            .take(15)
+            .toList();
 
     return [
       _buildCategoriesRow(context, provider),
@@ -365,7 +382,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       const SliverToBoxAdapter(child: SizedBox(height: 12)),
-      if (series.isNotEmpty)
+      if (series.isNotEmpty) ...[
         _buildHorizontalList(
           context,
           'Series',
@@ -376,6 +393,40 @@ class HomeScreen extends StatelessWidget {
               builder: (_) => const CategoryScreen(
                 title: 'All Series',
                 releaseTypeFilter: 'series',
+              ),
+            ),
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 12)),
+      ],
+      if (kdramas.isNotEmpty) ...[
+        _buildHorizontalList(
+          context,
+          'K-Dramas',
+          kdramas,
+          onSeeMore: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const CategoryScreen(
+                title: 'K-Dramas',
+                genreAnyFilter: ['K-Drama'],
+              ),
+            ),
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 12)),
+      ],
+      if (festivals.isNotEmpty)
+        _buildHorizontalList(
+          context,
+          'Festivals & Picks',
+          festivals,
+          onSeeMore: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const CategoryScreen(
+                title: 'Festivals & Picks',
+                genreAnyFilter: ['IFFK', 'Oscar', 'GEM', 'ഫെസ്റ്റ്'],
               ),
             ),
           ),
@@ -392,6 +443,7 @@ class HomeScreen extends StatelessWidget {
       'Comedy',
       'Drama',
       'Sci-Fi',
+      'K-Drama',
     ];
     return SliverToBoxAdapter(
       child: SizedBox(

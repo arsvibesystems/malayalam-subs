@@ -1,26 +1,26 @@
 {
-  "total_count": 5385,
-  "last_updated": "2026-09-20T15:01:43.253665+00:00",
+  "total_count": 5487,
+  "last_updated": "2026-11-28T10:27:14.599913+00:00",
   "per_source": {
-    "moviemirror": {
-      "total": 831,
-      "movies": 794,
-      "series": 37
-    },
-    "teamgoat": {
-      "total": 504,
-      "movies": 456,
-      "series": 48
-    },
     "ddmlsub": {
       "total": 384,
       "movies": 313,
       "series": 71
     },
+    "moviemirror": {
+      "total": 861,
+      "movies": 823,
+      "series": 38
+    },
     "msone": {
-      "total": 3666,
-      "movies": 3303,
-      "series": 363
+      "total": 3711,
+      "movies": 3345,
+      "series": 366
+    },
+    "teamgoat": {
+      "total": 531,
+      "movies": 482,
+      "series": 49
     }
   },
   "filters": {
@@ -274,6 +274,7 @@
       "Fantasy",
       "Feelgood",
       "Film-Noir",
+      "GEM",
       "GOOSEBUMPS",
       "Gangster",
       "Grotesque",
@@ -282,17 +283,21 @@
       "Historical_movie",
       "History",
       "Horror",
+      "IFFK",
+      "Indian",
       "K-Drama",
       "Katheyondu_Shuruvagide",
       "Khaleja",
       "Let_me_eat_Your_pancreas",
       "Martial Arts",
       "Melodrama",
+      "Mini Series",
       "Movies",
       "Mr",
       "Musical",
       "My_Tomorrow_Your_Yesterday",
       "Mystery",
+      "Oscar",
       "Peninsula",
       "Political Thriller",
       "Psychological",
@@ -307,6 +312,7 @@
       "Sci",
       "Sci-Fi",
       "Sci_Fi",
+      "Science Fiction",
       "Secret",
       "Seoul_Station",
       "Series",
@@ -314,8 +320,10 @@
       "Slasher",
       "Snuff",
       "Sport",
+      "Sports",
       "Spy",
       "Superhero",
+      "Supernatural Horror",
       "Survival",
       "Suspense",
       "THRILLER",
@@ -360,9 +368,11 @@
       "ആനിമേഷൻ",
       "ഇറോട്ടിക്",
       "ഇറോട്ടിക് ഡ്രാമ",
+      "ഇൻവെസ്റ്റിഗേഷൻ കോമഡി ഫെസ്റ്റ്",
       "കോമഡി",
       "ക്രൈം",
       "ഗുഡ്",
+      "ജാക്കി ചാൻ ഫെസ്റ്റ്",
       "ഡാർക്ക് കോമഡി",
       "ഡാർക്ക്‌ കോമഡി",
       "ഡോക്യുമെന്ററി",
@@ -380,11 +390,13 @@
       "ബയോപിക്ക്",
       "ബോഡി ഹൊറർ",
       "മിസ്റ്ററി",
+      "മെമ്പേഴ്‌സ് ചോയ്സ് ഫെസ്റ്റ്",
       "റൊമാൻസ്",
       "റൊമാന്റിക്",
       "റൊമാൻസ്",
       "വാർ",
       "ഷോർട്",
+      "ഷോർട് ഫിലിം ഫെസ്റ്റ്",
       "സയൻസ്",
       "സയൻസ് ഫിക്ഷൻ",
       "സീരിസ്",

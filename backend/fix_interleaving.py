@@ -18,10 +18,18 @@ def fix_interleaving():
         sources[site].append(item)
 
     # Sort each source internally by its TRUE mathematical chronological order
-    # For MSone, this is release_number. For others, it's their original created_at.
+    # For MSone, items with release_number are sorted by release_number; newer addon-only items (without release_number)
+    # stay ordered by created_at ahead of release_number items.
     for site, items in sources.items():
         if site == "msone":
-            items.sort(key=lambda x: x.get("release_number") or 0, reverse=True)
+            items.sort(
+                key=lambda x: (
+                    1 if (x.get("release_number") is None and x.get("created_at", "") > "2026-09-20") else 0,
+                    x.get("release_number") or 0,
+                    x.get("created_at", ""),
+                ),
+                reverse=True,
+            )
         else:
             items.sort(key=lambda x: x.get("created_at", ""), reverse=True)
 
@@ -41,7 +49,7 @@ def fix_interleaving():
     # pct=0.0 -> today
     # pct=100.0 -> 10 years ago
     
-    now = datetime(2026, 7, 26, 17, 0, 0, tzinfo=timezone.utc)
+    now = datetime.now(timezone.utc)
     max_days = 3650
     
     updates = 0

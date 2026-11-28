@@ -3,9 +3,11 @@ class Subtitle {
   final String title;
   final String slug;
   final String thumbnailUrl;
+  final String backdropUrl;
   final String movieLanguage;
   final String genres;
   final double? imdbRating;
+  final String imdbId;
   final String imdbUrl;
   final String translator;
   final String sourceSite;
@@ -23,9 +25,11 @@ class Subtitle {
     required this.title,
     required this.slug,
     required this.thumbnailUrl,
+    this.backdropUrl = '',
     required this.movieLanguage,
     required this.genres,
     this.imdbRating,
+    this.imdbId = '',
     required this.imdbUrl,
     required this.translator,
     required this.sourceSite,
@@ -40,17 +44,34 @@ class Subtitle {
     this.releaseNumber,
   });
 
+  static String extractImdbId(String value) {
+    final match = RegExp(r'(tt\d{5,})').firstMatch(value);
+    return match?.group(1) ?? '';
+  }
+
   factory Subtitle.fromJson(Map<String, dynamic> json) {
+    final rawImdbUrl = (json['imdb_url'] ?? '') as String;
+    final rawImdbId = (json['imdb_id'] ?? '') as String;
+    final resolvedImdbId =
+        rawImdbId.isNotEmpty ? rawImdbId : extractImdbId(rawImdbUrl);
+    final resolvedImdbUrl = rawImdbUrl.isNotEmpty
+        ? rawImdbUrl
+        : (resolvedImdbId.isNotEmpty
+            ? 'https://www.imdb.com/title/$resolvedImdbId/'
+            : '');
+
     return Subtitle(
       title: json['title'] ?? '',
       slug: json['slug'] ?? '',
       thumbnailUrl: json['thumbnail_url'] ?? '',
+      backdropUrl: json['backdrop_url'] ?? '',
       movieLanguage: json['movie_language'] ?? '',
       genres: json['genres'] ?? '',
       imdbRating: json['imdb_rating'] != null
           ? (json['imdb_rating'] as num).toDouble()
           : null,
-      imdbUrl: json['imdb_url'] ?? '',
+      imdbId: resolvedImdbId,
+      imdbUrl: resolvedImdbUrl,
       translator: json['translator'] ?? '',
       sourceSite: json['source_site'] ?? '',
       sourceUrl: json['source_url'] ?? '',
@@ -69,9 +90,11 @@ class Subtitle {
     String? title,
     String? slug,
     String? thumbnailUrl,
+    String? backdropUrl,
     String? movieLanguage,
     String? genres,
     double? imdbRating,
+    String? imdbId,
     String? imdbUrl,
     String? translator,
     String? sourceSite,
@@ -89,9 +112,11 @@ class Subtitle {
       title: title ?? this.title,
       slug: slug ?? this.slug,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      backdropUrl: backdropUrl ?? this.backdropUrl,
       movieLanguage: movieLanguage ?? this.movieLanguage,
       genres: genres ?? this.genres,
       imdbRating: imdbRating ?? this.imdbRating,
+      imdbId: imdbId ?? this.imdbId,
       imdbUrl: imdbUrl ?? this.imdbUrl,
       translator: translator ?? this.translator,
       sourceSite: sourceSite ?? this.sourceSite,
@@ -106,6 +131,12 @@ class Subtitle {
       releaseNumber: releaseNumber ?? this.releaseNumber,
     );
   }
+
+  /// Prefer full-resolution backdrop URL for detail header, falling back to thumbnail
+  String get effectiveBackdropUrl =>
+      backdropUrl.isNotEmpty ? backdropUrl : thumbnailUrl;
+
+  bool get hasImdbId => imdbId.isNotEmpty;
 
   /// Split genres string into a list
   List<String> get genreList =>

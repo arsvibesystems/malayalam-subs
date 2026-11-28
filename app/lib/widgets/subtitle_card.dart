@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:shimmer/shimmer.dart';
 import '../models/subtitle.dart';
 import '../theme/app_theme.dart';
+import 'poster_image.dart';
 
 /// Subtitle card widget used in grid layouts
 class SubtitleCard extends StatelessWidget {
@@ -38,22 +37,10 @@ class SubtitleCard extends StatelessWidget {
             // Poster image
             Hero(
               tag: 'poster_${subtitle.slug}',
-              child: CachedNetworkImage(
+              child: PosterImage(
                 imageUrl: subtitle.thumbnailUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Shimmer.fromColors(
-                  baseColor: AppTheme.bgCardLight,
-                  highlightColor: AppTheme.bgCard,
-                  child: Container(color: AppTheme.bgCardLight),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: AppTheme.bgCardLight,
-                  child: const Icon(
-                    Icons.movie_outlined,
-                    color: AppTheme.textMuted,
-                    size: 40,
-                  ),
-                ),
+                imdbId: subtitle.imdbId,
+                errorIconSize: 40,
               ),
             ),
 
